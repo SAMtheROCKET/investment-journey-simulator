@@ -1,0 +1,56 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is what pyproject and mypy target; 3.13 is what the
+        # project is developed against. Running both means a
+        # version-specific break is visible rather than latent.
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff mypy
+
+      # The scope below matches the gates held during development:
+      # the package, the launcher, the tests and the tooling. The
+      # superseded single-file scripts under legacy/ are deliberately
+      # outside it and would not pass.
+      - name: Lint
+        run: ruff check src tests tools streamlit_app.py
+
+      # No `|| true`. A type error is a failure, and swallowing it
+      # here means the badge says green while the gate is off.
+      - name: Type check
+        run: mypy
+
+      - name: Test
+        run: python -m pytest -q --cov=investment_journey_simulator --cov-report=term
+
+      - name: House style (line and function length)
+        run: python tools/check_house_style.py
+
+      # The app has to actually boot. A green suite with a broken
+      # entry point is the failure mode this catches: every test
+      # imports the package directly, so nothing else exercises the
+      # launcher or the src path it sets up.
+      - name: Launcher imports
+        run: python -c "import ast,pathlib; ast.parse(pathlib.Path('streamlit_app.py').read_text())"

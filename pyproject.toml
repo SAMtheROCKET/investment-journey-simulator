@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "investment-journey-simulator"
+# Read from investment_journey_simulator.__version__ so the
+# distribution and the package can never disagree. See the note
+# in that module for how this differs from the scenario schema.
+dynamic = ["version"]
+description = "Model any asset, any contribution and any life event, then compare how the decisions compound."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Sambit Supriya Dash", email = "sambitd0@gmail.com" }]
+keywords = [
+    "investment",
+    "simulation",
+    "financial-planning",
+    "scenario-analysis",
+    "compounding",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "streamlit>=1.53",
+    "pandas>=2.3",
+    "numpy>=2.4",
+    "plotly>=6.5",
+    "openpyxl>=3.1",
+    "reportlab>=4.4",
+    "kaleido>=1.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.0", "pytest-cov>=7.1", "ruff", "mypy"]
+notebooks = ["ipykernel>=7.1", "ipywidgets>=8.1", "matplotlib>=3.10"]
+
+[project.urls]
+Homepage = "https://github.com/sambitd0/investment-journey-simulator"
+Repository = "https://github.com/sambitd0/investment-journey-simulator"
+
+[tool.setuptools.dynamic]
+version = { attr = "investment_journey_simulator.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["investment_journey_simulator*"]
+
+# Everything the package needs at run time that is not Python.
+# The index history lives inside the package rather than beside the
+# repository, because a wheel does not carry the repository: an
+# installed copy looking for a folder called `data/` next to its own
+# source finds nothing, and the risk lab quietly loses its
+# historical half without reporting anything.
+[tool.setuptools.package-data]
+investment_journey_simulator = [
+    "py.typed",
+    "data/*.csv",
+    "guides/*.md",
+]
+
+# An installed copy gets a command of its own, so the tool is not
+# reachable only by knowing where its launcher file lives.
+[project.scripts]
+investment-journey = "investment_journey_simulator.portal_app:launch"
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+src = ["src", "tests"]
+# Notebooks carry the earlier implementation the tests cross-check
+# against. They are evidence, not source, and are not held to the
+# house rules.
+extend-include = []
+# The superseded single-file scripts kept for reference under
+# legacy/ are outside every gate and would not pass one.
+extend-exclude = ["legacy"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "RET"]
+ignore = ["E501", "C408"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+"streamlit_app.py" = ["E402"]
+"tools/build_rebalancing_report.py" = ["E402"]
+"src/investment_journey_simulator/exports/pdf_report.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/investment_journey_simulator"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true

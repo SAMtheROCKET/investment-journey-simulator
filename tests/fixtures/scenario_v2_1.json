@@ -1,0 +1,121 @@
+{
+  "scenario_version": "2.1",
+  "settings": {
+    "horizon_years_int": 20,
+    "portfolio_start_date": "2026-01-01",
+    "sip_at_month_start_bool": false,
+    "stepup": {
+      "mode_str": "GLOBAL",
+      "global_stepup_percent_float": 10.0,
+      "interval_months_int": 6,
+      "first_stepup_month_index_int": 12,
+      "fixed_increment_amount_float": 1500.0
+    },
+    "withdrawal": {
+      "is_enabled_bool": true,
+      "start_month_index_int": 180,
+      "mode_str": "PERCENT_OF_CORPUS",
+      "fixed_amount_float": 40000.0,
+      "monthly_schedule_list": [],
+      "annual_change_percent_float": 5.0,
+      "monthly_change_percent_list": [],
+      "portfolio_percent_float": 4.0
+    },
+    "pauses": {
+      "sip_pause_months_list": [],
+      "withdrawal_pause_months_list": [],
+      "pause_ranges_list": [
+        {
+          "start_date": "2029-04-01",
+          "end_date": "2030-03-01",
+          "scope_str": "SIP"
+        }
+      ]
+    },
+    "rebalance": {
+      "is_enabled_bool": true,
+      "interval_months_int": 12,
+      "method_str": "Partial (sell overweight only)",
+      "target_mode_str": "TARGET_ALLOC_COLUMN",
+      "tax_funding_str": "OUTSIDE",
+      "maximum_events_int": 0,
+      "trigger_str": "CALENDAR",
+      "drift_band_percent_float": 5.0,
+      "use_contribution_steering_bool": true,
+      "rebalance_month_index_tuple": []
+    },
+    "tax": {
+      "exemption_level_str": "PER_TAXPAYER",
+      "portfolio_exemption_amount_float": 125000.0,
+      "apply_final_liquidation_tax_bool": false,
+      "surcharge_percent_float": 10.0,
+      "cess_percent_float": 4.0,
+      "allow_loss_set_off_bool": true,
+      "surcharge_mode_str": "MANUAL",
+      "surcharge_regime_str": "NEW",
+      "total_income_float": 2500000.0,
+      "apply_grandfathering_bool": true,
+      "income_by_year_tuple": [],
+      "tax_year_start_month_int": 4
+    },
+    "one_off_contributions_list": [
+      {
+        "month_index_int": 96,
+        "amount_float": 500000.0,
+        "fund_name_str": ""
+      }
+    ],
+    "instalment_override_list": [
+      {
+        "month_index_int": 36,
+        "amount_float": 30000.0,
+        "fund_name_str": ""
+      }
+    ]
+  },
+  "inflation_percent": 6.0,
+  "slab_rate_percent": 30.0,
+  "expense_model": "SIMPLE_SUBTRACTION",
+  "funds": [
+    {
+      "MF Name": "Fund-A",
+      "Fund Type Preset": "Equity-Oriented (Default)",
+      "Override Preset?": false,
+      "SIP / month": 2000.0,
+      "Lump sum now": 0.0,
+      "Fund Step-up %": 0.0,
+      "Return % (gross)": 12.0,
+      "Expense %": 0.2,
+      "Fund Start": "2026-01-01",
+      "Target Allocation %": 50.0,
+      "STCG %": 20.0,
+      "LTCG %": 12.5,
+      "LTCG threshold (months)": 12,
+      "Exemption (amount)": 125000.0,
+      "Exemption Scope": "LTCG_ONLY",
+      "Exit load %": 0.0,
+      "Exit load within (months)": 0,
+      "STT % on sale": 0.001
+    },
+    {
+      "MF Name": "Fund-B",
+      "Fund Type Preset": "Equity-Oriented (Default)",
+      "Override Preset?": false,
+      "SIP / month": 2000.0,
+      "Lump sum now": 0.0,
+      "Fund Step-up %": 0.0,
+      "Return % (gross)": 9.0,
+      "Expense %": 0.2,
+      "Fund Start": "2026-01-01",
+      "Target Allocation %": 50.0,
+      "STCG %": 20.0,
+      "LTCG %": 12.5,
+      "LTCG threshold (months)": 12,
+      "Exemption (amount)": 125000.0,
+      "Exemption Scope": "LTCG_ONLY",
+      "Exit load %": 0.0,
+      "Exit load within (months)": 0,
+      "STT % on sale": 0.001
+    }
+  ]
+}

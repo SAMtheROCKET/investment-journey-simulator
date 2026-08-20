@@ -1,0 +1,53 @@
+# Virtual environment. Anyone cloning builds their own from
+# requirements.txt; committing one is 650 MB of somebody else's
+# machine.
+env/
+venv/
+.venv/
+
+# Byte code and build artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg-link
+build/
+dist/
+
+# Tool caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Editor and OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Word and Office lock files
+~$*
+
+# Jupyter checkpoints. The notebooks themselves are tracked, with
+# their outputs stripped - one of them was 50 MB of embedded chart
+# images and 29 KB of actual source.
+.ipynb_checkpoints/
+
+# Streamlit's own local state
+.streamlit/secrets.toml
+
+# Working files that live beside the project without being part of
+# it: drafts, exports, screenshots, downloaded archives. Everything
+# in here is yours and none of it is ever pushed - except the note
+# explaining what the folder is for, so a fresh clone gets the
+# folder rather than having to guess it was meant to exist.
+_local/*
+!_local/README.md
+
+# Rasterised diagram previews. `tools/render_diagrams.py --preview`
+# writes these so a change can be looked at rather than guessed at;
+# the SVGs beside them are the tracked artefact, and both regenerate
+# from src/investment_journey_simulator/diagrams/money_flow.py.
+docs/diagrams/*.png

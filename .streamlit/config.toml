@@ -1,0 +1,132 @@
+# Dashboard theme - "Ink and Brass".
+#
+# Every colour below was checked by computation, not by eye, against
+# WCAG contrast and the OKLab colour-vision-deficiency separation
+# gates. See src/investment_journey_simulator/palette.py for the
+# measured worst cases behind the chart colours, and
+# src/investment_journey_simulator/design_tokens.py for the chrome.
+#
+# The division this file rests on:
+#
+#   chrome  - canvas, sidebar, rules, accents. Chosen. Never
+#             encodes a value.
+#   data    - chartCategoricalColors and the status colours in
+#             palette.py. Measured. Never chosen for looks.
+#
+# ---------------------------------------------------------------
+# WHY [theme.dark] DECLARES SO MUCH
+# ---------------------------------------------------------------
+# Streamlit sends each variant to the browser with its own `base`,
+# and `base` can only be set in [theme] - it is not a registerable
+# option inside [theme.dark]. `runtime/app_session.py` says what
+# happens then, in its own words:
+#
+#     "If unset, base and font will default to the protobuf enum
+#      zero values, which are BaseTheme.LIGHT ..."
+#
+# So the dark variant arrives claiming to be a light theme. Every
+# colour it does not state gets a light-theme default: grayTextColor,
+# for instance, defaults to #31333f at 60% opacity - a dark grey -
+# which is then painted on this file's dark background. The result is
+# text that is invisible until a hover state replaces it, which is
+# exactly what it looked like.
+#
+# There is no way to correct the base, so nothing that has a
+# theme-dependent default may be left to derive. All twenty-four are
+# stated below. `tests/test_theme_config.py` fails if one goes
+# missing again.
+#
+# Four further traps this file avoids:
+#
+#   * backgroundColor is the surface Plotly traces land on, so it
+#     is bound by the chart palette's 3:1 gate rather than by
+#     taste. #FBF9F4 is the warmest vellum that keeps amber
+#     #D97706 above it (3.03, against 3.02 on the cool background
+#     this replaced). A deeper vellum reads better and fails, which
+#     is why the money-flow diagrams carry their own darker ground
+#     and the page does not.
+#   * the sidebar primary is NOT the light-mode verdigris #0B6259,
+#     which measures 1.9:1 on the deep sidebar and fails. #54BFB2
+#     is 7.62:1 and passes. The dark theme needs the same
+#     substitution for the same reason.
+#   * borderColor is a decorative hairline at 1.27:1 and must never
+#     be used for an input outline or a focus ring, which need 3:1.
+#   * brass is a heading and structure colour only. The moment it
+#     is used to tell two numbers apart, a reader who has learned
+#     that brass means "section" has been misled.
+
+[theme]
+base = "light"
+primaryColor = "#0B6259"
+backgroundColor = "#FBF9F4"
+secondaryBackgroundColor = "#F1EDE3"
+textColor = "#111C24"
+borderColor = "#E4DED1"
+linkColor = "#0B6259"
+showSidebarBorder = true
+chartCategoricalColors = [
+    "#2563EB",
+    "#D97706",
+    "#0891B2",
+    "#DB2777",
+    "#5B21B6",
+    "#92400E",
+]
+
+# The console. Deliberately much darker than the canvas: the rail is
+# where you are, the canvas is what you are reading. Applied to both
+# variants, which is why the chrome in ui/chrome.py derives its
+# colours from the page's own text colour rather than from a guess
+# about which theme is running.
+[theme.sidebar]
+backgroundColor = "#141E26"
+secondaryBackgroundColor = "#1C2831"
+textColor = "#EAF0F2"
+primaryColor = "#54BFB2"
+linkColor = "#D2A567"
+
+# Streamlit 1.53 accepts chartCategoricalColors only at the top
+# level, never per mode, so the dark categorical set is NOT declared
+# here. It lives in palette.py and is applied to each trace in code,
+# which is where fund colours are assigned anyway.
+[theme.dark]
+primaryColor = "#54BFB2"
+backgroundColor = "#0D141A"
+secondaryBackgroundColor = "#111A21"
+textColor = "#EAF0F2"
+borderColor = "#27333C"
+linkColor = "#D2A567"
+
+# The grey family is the one that broke. It carries secondary text:
+# inactive tab labels, captions, helper lines, the quiet half of a
+# button. Left to derive, all of it came out dark on dark.
+grayColor = "#6B7A85"
+grayTextColor = "#B9C4CB"
+grayBackgroundColor = "#18222A"
+
+# The semantic families, used by st.info, st.success, st.warning,
+# st.error, badges and code. Each states its own text and background
+# so the pair is legible together rather than separately.
+blueColor = "#5AA0F2"
+blueTextColor = "#A9CBF8"
+blueBackgroundColor = "#12202D"
+
+greenColor = "#4FBF9B"
+greenTextColor = "#93DCC4"
+greenBackgroundColor = "#10241F"
+
+orangeColor = "#E0913C"
+orangeTextColor = "#F0C08A"
+orangeBackgroundColor = "#2A1E12"
+
+redColor = "#F0605F"
+redTextColor = "#F5A0A0"
+redBackgroundColor = "#2A1416"
+
+violetColor = "#A98BE6"
+violetTextColor = "#C9B6F0"
+violetBackgroundColor = "#1E1830"
+
+yellowColor = "#D9BE4E"
+yellowTextColor = "#E8D68A"
+yellowBackgroundColor = "#241F10"

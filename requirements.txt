@@ -1,0 +1,30 @@
+# Pinned to the versions this project is tested against.
+#
+# Unpinned dependencies are how a working project stops working six
+# months later without anyone changing a line of it. Streamlit in
+# particular moves fast — the `use_container_width` parameter this
+# code once used was deprecated mid-build.
+#
+# To upgrade: raise a pin, run the suite, and only then commit.
+
+# --- Runtime ---
+streamlit==1.53.0
+pandas==2.3.3
+numpy==2.4.1
+plotly==6.5.2
+
+# --- Exports ---
+openpyxl==3.1.5
+reportlab==4.4.9
+kaleido==1.2.0
+
+# --- Charting used by the superseded single-file scripts ---
+matplotlib==3.10.8
+
+# --- Notebooks, for the exploratory work under jupyter/ ---
+ipykernel==7.1.0
+ipywidgets==8.1.8
+
+# --- Tests ---
+pytest==9.0.2
+pytest-cov==7.1.0
