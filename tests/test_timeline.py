@@ -199,7 +199,15 @@ def test_a_pause_and_resume_become_one_window() -> None:
     """A pause closed by a resume compiles to a bounded range.
 
     REFERENCE: G4-SYNTHETIC. This is the translation the whole
-    timeline idea rests on.
+    timeline idea rests on, and the month it ends on is the whole
+    subtlety. Both ends of a range are inclusive, so a pause in
+    January 2029 resumed in January 2030 covers 2029 exactly: the
+    resume month pays, and the twelve before it do not.
+
+    Ending the range *on* the resume was the original reading. It
+    made every gap a month too long, so every plan carrying one
+    was a payment short - about a fifth of a per cent over twenty
+    years, which looks like rounding and is not.
     """
     settings = compile_settings(
         build_plan(
@@ -211,7 +219,7 @@ def test_a_pause_and_resume_become_one_window() -> None:
     )
     assert settings.pauses.pause_ranges_list == [
         PauseRange(
-            date(2029, 1, 1), date(2030, 1, 1), PAUSE_SCOPE_SIP_STR
+            date(2029, 1, 1), date(2029, 12, 1), PAUSE_SCOPE_SIP_STR
         )
     ]
 
@@ -367,16 +375,23 @@ def test_a_paused_timeline_matches_the_classic_pause() -> None:
 
     REFERENCE: G1-ANALYTIC. Extends the agreement check to the
     one translation with real logic behind it.
+
+    The two notations name the same window differently, and that
+    is the translation being tested. Settings carry a range whose
+    last month is silent. The timeline carries a *resume*, and a
+    resume is the month money starts again - so it sits on the
+    month after the range ends.
     """
     pause_start_date = date(2029, 1, 1)
-    pause_end_date = date(2030, 12, 1)
+    last_silent_date = date(2030, 12, 1)
+    resume_date = date(2031, 1, 1)
     plan = build_plan(
         [
             TimelineEvent(
                 EVENT_START_SIP_STR, START_DATE, amount_float=10000.0
             ),
             TimelineEvent(EVENT_PAUSE_STR, pause_start_date),
-            TimelineEvent(EVENT_RESUME_STR, pause_end_date),
+            TimelineEvent(EVENT_RESUME_STR, resume_date),
         ],
         15,
     )
@@ -394,7 +409,7 @@ def test_a_paused_timeline_matches_the_classic_pause() -> None:
                 pause_ranges_list=[
                     PauseRange(
                         pause_start_date,
-                        pause_end_date,
+                        last_silent_date,
                         PAUSE_SCOPE_SIP_STR,
                     )
                 ]
@@ -937,3 +952,155 @@ def test_every_event_in_the_menu_explains_itself() -> None:
     """
     for event_type_str in EVENT_TYPE_TUPLE:
         assert EVENT_EXPLANATION_DICT.get(event_type_str)
+
+
+# --- The month a gap starts and the month it ends -----------------
+#
+# A reader draws a gap by placing two events. What matters is that
+# the months between them are exactly the months they meant, and an
+# off-by-one here is invisible: it passes every test that asks only
+# whether a pause happened, and costs one instalment plus its
+# compounding, which reads as a rounding difference and is not one.
+
+
+def count_paying_months_int(event_list: list, years_int: int) -> int:
+    """How many months of a plan actually pay an instalment."""
+    settings = compile_settings(build_plan(event_list, years_int))
+    result = PortfolioSimulator(
+        [build_test_fund("Equity", 10000.0, 12.0, 0.0, START_DATE)],
+        settings,
+    ).run()
+    return sum(
+        1
+        for snapshot in result.monthly_snapshots_list
+        if snapshot.monthly_sip_float > 0.0
+    )
+
+
+def test_a_pause_month_stops_and_a_resume_month_pays() -> None:
+    """The two boundaries, stated in one place.
+
+    REFERENCE: G4-SYNTHETIC. A pause placed on a month silences
+    that month; a resume placed on a month pays it.
+    """
+    settings = compile_settings(
+        build_plan(
+            [
+                TimelineEvent(
+                    EVENT_START_SIP_STR,
+                    START_DATE,
+                    amount_float=10000.0,
+                ),
+                TimelineEvent(EVENT_PAUSE_STR, date(2029, 1, 1)),
+                TimelineEvent(EVENT_RESUME_STR, date(2030, 1, 1)),
+            ],
+            10,
+        )
+    )
+    result = PortfolioSimulator(
+        [build_test_fund("Equity", 10000.0, 12.0, 0.0, START_DATE)],
+        settings,
+    ).run()
+    paid_dict = {
+        snapshot.month_date: snapshot.monthly_sip_float
+        for snapshot in result.monthly_snapshots_list
+    }
+    assert paid_dict[date(2028, 12, 1)] > 0.0
+    assert paid_dict[date(2029, 1, 1)] == 0.0
+    assert paid_dict[date(2029, 12, 1)] == 0.0
+    assert paid_dict[date(2030, 1, 1)] > 0.0
+
+
+def test_a_gap_is_exactly_as_long_as_it_was_drawn() -> None:
+    """Count the months, do not merely check the direction.
+
+    REFERENCE: G1-ANALYTIC. An off-by-one passes every test that
+    asks whether a pause happened, so this asks how long it was.
+    """
+    start_event = TimelineEvent(
+        EVENT_START_SIP_STR, START_DATE, amount_float=10000.0
+    )
+    horizon_years_int = 10
+    total_months_int = horizon_years_int * 12
+    assert (
+        count_paying_months_int([start_event], horizon_years_int)
+        == total_months_int
+    )
+    for gap_years_int, resume_date in (
+        (1, date(2030, 1, 1)),
+        (2, date(2031, 1, 1)),
+        (3, date(2032, 1, 1)),
+    ):
+        paying_int = count_paying_months_int(
+            [
+                start_event,
+                TimelineEvent(EVENT_PAUSE_STR, date(2029, 1, 1)),
+                TimelineEvent(EVENT_RESUME_STR, resume_date),
+            ],
+            horizon_years_int,
+        )
+        assert paying_int == total_months_int - gap_years_int * 12
+
+
+def test_a_resume_in_its_own_pause_month_stops_nothing() -> None:
+    """Pausing and resuming in one month is not a pause.
+
+    REFERENCE: G4-SYNTHETIC. The window would run backwards, and a
+    backwards window covers nothing - which is the right answer.
+    """
+    assert count_paying_months_int(
+        [
+            TimelineEvent(
+                EVENT_START_SIP_STR, START_DATE, amount_float=10000.0
+            ),
+            TimelineEvent(EVENT_PAUSE_STR, date(2029, 1, 1)),
+            TimelineEvent(EVENT_RESUME_STR, date(2029, 1, 1)),
+        ],
+        10,
+    ) == 120
+
+
+def test_stopping_withdrawals_then_starting_them_again() -> None:
+    """A stop must not swallow the start that follows it.
+
+    REFERENCE: G4-SYNTHETIC. A stop used to run to the horizon
+    whatever came after, so a later "start withdrawing" was drawn
+    on the rail and silently never paid out.
+    """
+    settings = compile_settings(
+        build_plan(
+            [
+                TimelineEvent(
+                    EVENT_START_SIP_STR,
+                    START_DATE,
+                    amount_float=25000.0,
+                ),
+                TimelineEvent(
+                    EVENT_WITHDRAW_STR,
+                    date(2030, 1, 1),
+                    amount_float=5000.0,
+                ),
+                TimelineEvent(
+                    EVENT_STOP_WITHDRAW_STR, date(2032, 1, 1)
+                ),
+                TimelineEvent(
+                    EVENT_WITHDRAW_STR,
+                    date(2035, 1, 1),
+                    amount_float=5000.0,
+                ),
+            ],
+            15,
+        )
+    )
+    result = PortfolioSimulator(
+        [build_test_fund("Equity", 25000.0, 12.0, 0.0, START_DATE)],
+        settings,
+    ).run()
+    paid_dict = {
+        snapshot.month_date: snapshot.monthly_withdrawal_float
+        for snapshot in result.monthly_snapshots_list
+    }
+    assert paid_dict[date(2031, 12, 1)] > 0.0
+    assert paid_dict[date(2032, 1, 1)] == 0.0
+    assert paid_dict[date(2034, 12, 1)] == 0.0
+    assert paid_dict[date(2035, 1, 1)] > 0.0

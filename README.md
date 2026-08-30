@@ -3,7 +3,7 @@
 **What your investments could become - and how much the decisions
 along the way change that number.**
 
-[![tests](https://img.shields.io/badge/tests-2%2C545%20passing-2ea44f)](tests/README.md)
+[![tests](https://img.shields.io/badge/tests-2%2C549%20passing-2ea44f)](tests/README.md)
 [![coverage](https://img.shields.io/badge/coverage-93%25-2ea44f)](tests/README.md)
 [![ruff](https://img.shields.io/badge/ruff-clean-2ea44f)](pyproject.toml)
 [![mypy](https://img.shields.io/badge/mypy-clean-2ea44f)](pyproject.toml)
@@ -257,7 +257,7 @@ src/
     diagrams/        money-flow pictures, drawn by code
     data/            index history the risk lab replays
     guides/          the checklists the Guides screen serves
-tests/               2,545 passing, and two independent simulators
+tests/               2,549 passing, and two independent simulators
                      written to disagree with the engine
 docs/                features, sources, architecture, design notes
   diagrams/          the generated money-flow SVGs
@@ -445,7 +445,7 @@ cannot exercise the screens that display one.
 
 | Gate | Status |
 |---|---|
-| Tests | **2,545 passing**, 4 intentionally skipped |
+| Tests | **2,549 passing**, 4 intentionally skipped |
 | Statement coverage | **93%** |
 | Ruff findings | **0** |
 | Mypy errors | **0** |

@@ -11,6 +11,47 @@ that file's shape is, and only changes when an old file would
 otherwise stop loading. The **Python API** is not versioned at all,
 because nothing outside this repository imports it.
 
+## 4.4.0 - 31 August 2026
+
+Every gap on a timeline was one month too long.
+
+### Fixed
+
+- **A resume month did not pay.** A pause paired with a resume
+  compiled to a window ending *on* the resume, and both ends of a
+  window are inclusive - so the month the reader said "start
+  again" was the last silent one. Every gap ran a month longer
+  than it was drawn, and every plan carrying one was an instalment
+  short. On a thirty-year plan with a five-year break that is
+  about a fifth of a per cent: small enough to read as rounding,
+  and not rounding.
+- **A stop to withdrawals swallowed the next start.** "Stop
+  withdrawing" ran to the end of the horizon whatever followed it,
+  so a later "start withdrawing" was placed on the rail, drawn on
+  the chart, and silently never paid out. A stop now ends where
+  the next start begins.
+- **The rail and the Gantt drew gaps a month short.** Both read a
+  window's inclusive last month as an exclusive bar end. Correct
+  while the compiler was also wrong; visible the moment it was
+  fixed.
+- **Migrated plans keep exactly the months they were saved with.**
+  The migration placed a resume on a legacy window's last month to
+  match the old compiler. Both halves were wrong together and
+  right in combination: an old file round tripped, and a resume a
+  reader placed by hand cost them an instalment.
+
+### Changed
+
+- Fixtures that meant "three years off" now say so under the
+  corrected convention, so the figures they back are unchanged.
+  Where a document quotes a pause cost, that cost still stands.
+
+### Added
+
+- Boundary tests that count the paying months rather than asking
+  whether a pause happened at all. An off-by-one passes every test
+  of the second kind, which is how this survived.
+
 ## 4.3.1 - 31 August 2026
 
 A plan saved twice under two names, and the reason it happened.

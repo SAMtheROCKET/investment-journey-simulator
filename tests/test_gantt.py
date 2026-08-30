@@ -116,6 +116,8 @@ def test_a_pause_breaks_the_contribution_lane_in_three() -> None:
     assert len(bar_list) == 3
     assert bar_list[1].kind_str == KIND_PAUSED_STR
     assert bar_list[1].start_date == date(2029, 1, 1)
+    # Bars are drawn with an exclusive end, so a span covering
+    # the whole of 2029 and 2030 ends on the resume month.
     assert bar_list[1].end_date == date(2031, 1, 1)
     assert bar_list[1].months_int == 24
 

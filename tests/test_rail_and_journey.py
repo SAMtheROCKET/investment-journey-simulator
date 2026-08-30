@@ -28,6 +28,9 @@ from investment_journey_simulator.timeline import (
     collect_inflation_schedule_tuple,
     compile_settings,
 )
+from investment_journey_simulator.timeline_app import (
+    build_span_list,
+)
 from investment_journey_simulator.ui.rail_view import (
     build_dot_order_list,
     build_month_date_list,
@@ -208,23 +211,20 @@ def test_a_pause_is_drawn_as_a_span_not_a_dot() -> None:
             TimelineEvent(EVENT_RESUME_STR, date(2030, 1, 1)),
         ]
     )
-    span_list = [
-        (
-            pause_range.start_date,
-            pause_range.end_date,
-            "Contributions paused",
-        )
-        for pause_range in compile_settings(
-            plan
-        ).pauses.pause_ranges_list
-    ]
-    figure = build_rail_figure(plan, span_list)
+    # Built by the real function rather than reimplemented here.
+    # A test that rebuilds its own input cannot catch a change in
+    # the thing it is meant to be testing, and this one could not:
+    # the conversion from an inclusive range to a drawn span is
+    # exactly what it exists to hold.
+    figure = build_rail_figure(plan, build_span_list(plan))
     span_trace_list = [
         trace
         for trace in figure.data
         if trace.mode == "lines" and trace.line.width == 9
     ]
     assert len(span_trace_list) == 1
+    # Drawn with an exclusive end, so the span reaches the resume
+    # month without covering it.
     assert span_trace_list[0].x == (
         date(2029, 1, 1),
         date(2030, 1, 1),

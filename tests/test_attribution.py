@@ -88,7 +88,7 @@ def build_paused_journey() -> PlanScenario:
     return build_journey(
         "Paused for three years",
         TimelineEvent(EVENT_PAUSE_STR, date(2031, 1, 1)),
-        TimelineEvent(EVENT_RESUME_STR, date(2033, 12, 1)),
+        TimelineEvent(EVENT_RESUME_STR, date(2034, 1, 1)),
     )
 
 
@@ -474,7 +474,7 @@ def build_actual_event_list() -> list:
             EVENT_CHANGE_SIP_STR, date(2029, 1, 1), 18000.0
         ),
         TimelineEvent(EVENT_PAUSE_STR, date(2033, 1, 1)),
-        TimelineEvent(EVENT_RESUME_STR, date(2035, 12, 1)),
+        TimelineEvent(EVENT_RESUME_STR, date(2036, 1, 1)),
         TimelineEvent(
             EVENT_WITHDRAW_STR, date(2038, 1, 1), 40000.0
         ),

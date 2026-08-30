@@ -183,46 +183,74 @@ def _split_around_pauses(
 ) -> list[GanttBar]:
     """Break a running stretch wherever a pause interrupts it.
 
-    Brief:
-        A contribution lane is not one bar from start to finish -
-        it is the stretches between the pauses. Drawing it as one
-        bar would hide exactly the thing the reader is looking for.
+    A contribution lane is the stretches between its pauses, not
+    one bar from start to finish; drawing it whole would hide the
+    thing the reader came to see.
 
     Arguments:
         start_date (date): First month the activity runs.
-        end_date (date): Month the activity would otherwise end.
+        end_date (date): Month it would otherwise end.
         pause_range_list (list): Windows that interrupt it.
         lane_str (str): Lane the bars belong to.
-        label_str (str): Label for the running stretches.
+        label_str (str): Label for running stretches.
 
     Returns:
         List[GanttBar]: Running and paused bars, in order.
 
     Warning:
-        Overlapping pauses are handled by walking in date order.
+        A range names its last silent month; a bar ends
+        exclusively, so each widens by one here.
     """
     bar_list: list[GanttBar] = []
     cursor_date = start_date
     for pause_range in sorted(
         pause_range_list, key=lambda window: window.start_date
     ):
-        window_start_date = max(cursor_date, pause_range.start_date)
-        window_end_date = min(end_date, pause_range.end_date)
-        if window_start_date >= window_end_date:
+        window_tuple = _build_window_tuple(
+            cursor_date, end_date, pause_range
+        )
+        if window_tuple is None:
             continue
         bar_list.extend(
             _build_interrupted_pair_list(
-                lane_str,
-                label_str,
-                (cursor_date, window_start_date, window_end_date),
+                lane_str, label_str, window_tuple
             )
         )
-        cursor_date = window_end_date
+        cursor_date = window_tuple[2]
     if cursor_date < end_date:
         bar_list.append(
             GanttBar(lane_str, cursor_date, end_date, label_str)
         )
     return bar_list
+
+
+def _build_window_tuple(
+    cursor_date: date,
+    end_date: date,
+    pause_range,
+) -> tuple | None:
+    """Clip one pause to the stretch still being drawn.
+
+    Brief:
+        A range names its last silent month and a bar ends
+        exclusively, so the window widens by one month here.
+
+    Arguments:
+        cursor_date (date): Where the lane has been drawn to.
+        end_date (date): Where the lane stops.
+        pause_range (PauseRange): Window interrupting it.
+
+    Returns:
+        Optional[tuple]: Cursor, window start and window end, or
+            None when this pause leaves nothing to draw.
+    """
+    window_start_date = max(cursor_date, pause_range.start_date)
+    window_end_date = min(
+        end_date, _add_months_date(pause_range.end_date, 1)
+    )
+    if window_start_date >= window_end_date:
+        return None
+    return cursor_date, window_start_date, window_end_date
 
 
 def _build_interrupted_pair_list(

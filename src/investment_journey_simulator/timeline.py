@@ -353,20 +353,21 @@ def _collect_pause_range_list(
 ) -> list[PauseRange]:
     """Pair every pause event with the resume that follows it.
 
-    Brief:
-        A pause with no matching resume runs to the end of the
-        horizon, which is what "I stop and never restart" means.
+    A pause with no matching resume runs to the horizon, which is
+    what "I stop and never restart" means.
 
     Arguments:
         plan (TimelinePlan): Plan being compiled.
 
     Returns:
-        List[PauseRange]: Inclusive pause windows.
+        List[PauseRange]: Windows ending the month before resume.
 
     Warning:
-        A resume with no preceding pause is ignored rather than
-        treated as an error, because the timeline lets events be
-        added in any order.
+        Range ends are inclusive, so a window stops a month short
+        of its resume: otherwise the month the reader said "start
+        again" is the last silent one, and every plan with a gap
+        is a payment short. A resume in its pause's own month
+        gives a reversed range, matching nothing.
     """
     pause_range_list: list[PauseRange] = []
     open_pause_date: date | None = None
@@ -383,7 +384,7 @@ def _collect_pause_range_list(
             pause_range_list.append(
                 PauseRange(
                     open_pause_date,
-                    event.event_date,
+                    _add_months_date(event.event_date, -1),
                     PAUSE_SCOPE_SIP_STR,
                 )
             )
@@ -515,23 +516,34 @@ def _collect_withdrawal_stop_list(
         plan (TimelinePlan): Plan being compiled.
 
     Returns:
-        List[PauseRange]: Withdrawal-scoped pauses to the horizon.
+        List[PauseRange]: Withdrawal-scoped pauses, each ending
+            the month before withdrawals begin again.
 
     Warning:
-        A stop runs to the end of the plan. Starting a withdrawal
-        again afterwards needs a fresh "start withdrawing" event,
-        and the engine models one withdrawal rule, so the later
-        event replaces rather than resumes.
+        A stop used to run to the end of the plan whatever
+        followed it, which meant a later "start withdrawing" was
+        placed on the rail, drawn on the chart, and silently never
+        paid out - the stop was still covering it. A stop now ends
+        where the next start begins, and only runs to the horizon
+        when nothing starts again.
     """
-    return [
-        PauseRange(
-            event.event_date,
-            plan.end_date,
-            PAUSE_SCOPE_WITHDRAWAL_STR,
+    range_list: list[PauseRange] = []
+    for event in plan.ordered_event_list:
+        if event.event_type_str != EVENT_STOP_WITHDRAW_STR:
+            continue
+        restart_date = _find_next_event_date(
+            plan, EVENT_WITHDRAW_STR, event.event_date
         )
-        for event in plan.ordered_event_list
-        if event.event_type_str == EVENT_STOP_WITHDRAW_STR
-    ]
+        range_list.append(
+            PauseRange(
+                event.event_date,
+                _add_months_date(restart_date, -1)
+                if restart_date is not None
+                else plan.end_date,
+                PAUSE_SCOPE_WITHDRAWAL_STR,
+            )
+        )
+    return range_list
 
 
 def collect_inflation_schedule_tuple(plan: TimelinePlan) -> tuple:

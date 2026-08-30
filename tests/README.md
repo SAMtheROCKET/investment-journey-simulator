@@ -5,7 +5,7 @@ python -m pytest tests -q                       # run everything
 python -m pytest tests -q --cov=investment_journey_simulator   # with coverage
 ```
 
-**Current status: 2,545 passed · 4 intentionally skipped · 93%
+**Current status: 2,549 passed · 4 intentionally skipped · 93%
 statement coverage.**
 
 The four skips are deliberate and self-describing: two files exempt
@@ -18,7 +18,7 @@ runner, so widget-level failures are caught by CI.
 Quality gate (all green, all in CI):
 
 ```bash
-python -m pytest                       # 2,545 passed, 4 skipped
+python -m pytest                       # 2,549 passed, 4 skipped
 ruff check src tests tools streamlit_app.py
 python tools/check_house_style.py      # 0 long lines, 0 long functions
 mypy                                   # 0 errors

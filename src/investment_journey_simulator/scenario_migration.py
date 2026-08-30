@@ -26,6 +26,7 @@ from investment_journey_simulator.constants import (
     COLUMN_FUND_STEPUP_STR,
     COLUMN_PRESET_STR,
     EXPENSE_MODEL_SIMPLE_STR,
+    MONTHS_IN_YEAR_INT,
     REBALANCE_TRIGGER_DATED_STR,
     STEPUP_MODE_OFF_STR,
 )
@@ -177,12 +178,18 @@ def migrate_pause_event_list(
         List[Dict[str, Any]]: Pause and resume event records.
 
     Warning:
-        The resume is placed **on** the range's last month, not
-        the month after it. That is the rail's own convention:
-        `_collect_pause_range_list` reads a resume date as the
-        inclusive end of the window it closes. Placing it a month
-        later would lengthen every migrated pause by one month and
-        quietly change what an old saved plan is worth.
+        The resume is placed on the month **after** the range
+        ends, because that is the month contributions start again
+        and "resume" is an event rather than a boundary.
+
+        It used to be placed on the range's last month, to match a
+        compiler that read a resume date as the inclusive end of
+        the window it closed. Both halves of that were wrong
+        together and right in combination: an old plan round
+        tripped, and a resume the reader placed by hand cost them
+        a month's instalment. The compiler now ends a pause the
+        month before its resume, so this has to move by one month
+        for a migrated plan to keep exactly the months it had.
     """
     pauses_dict = settings_dict.get("pauses") or {}
     event_list: list[dict[str, Any]] = []
@@ -195,9 +202,26 @@ def migrate_pause_event_list(
             build_event_dict(EVENT_PAUSE_STR, start_str)
         )
         event_list.append(
-            build_event_dict(EVENT_RESUME_STR, end_str)
+            build_event_dict(
+                EVENT_RESUME_STR, _shift_month_str(end_str, 1)
+            )
         )
     return event_list
+
+
+def _shift_month_str(date_str: str, offset_int: int) -> str:
+    """Move an ISO month-start date by whole months."""
+    anchor_date = date.fromisoformat(date_str)
+    zero_based_int = (
+        anchor_date.year * MONTHS_IN_YEAR_INT
+        + anchor_date.month
+        - 1
+        + int(offset_int)
+    )
+    year_int, month_int = divmod(
+        zero_based_int, MONTHS_IN_YEAR_INT
+    )
+    return date(year_int, month_int + 1, 1).isoformat()
 
 
 def migrate_contribution_event_list(

@@ -317,11 +317,19 @@ def test_dated_parts_land_on_the_right_months():
 def test_a_migrated_pause_covers_exactly_its_old_months():
     """A pause window must not gain or lose a month in the upgrade.
 
-    The rail reads a resume date as the *inclusive end* of the
-    window it closes, so the resume is placed on the range's last
-    month rather than the month after. Getting this wrong
-    lengthens every migrated pause by one month, which changes
-    what an old saved plan is worth.
+    The legacy file carries a window of 2029-04 to 2030-03, both
+    ends inclusive. It becomes a pause on the first of those
+    months and a resume on the month *after* the last, because a
+    resume is the month contributions start again - and the
+    compiler ends a pause the month before its resume.
+
+    Both halves of this were once wrong together and right in
+    combination: the resume was placed on the window's last month
+    to match a compiler that read it as an inclusive end. An old
+    plan round tripped, and a resume a reader placed by hand cost
+    them an instalment. What matters either way is this: the
+    window a migrated plan actually runs is the window it was
+    saved with.
     """
     scenario = decode_scenario(load_legacy_dict())
     resume_event = next(
@@ -329,7 +337,7 @@ def test_a_migrated_pause_covers_exactly_its_old_months():
         for event in scenario.plan.event_list
         if event.event_type_str == EVENT_RESUME_STR
     )
-    assert resume_event.event_date == date(2030, 3, 1)
+    assert resume_event.event_date == date(2030, 4, 1)
     pause_range_list = compile_scenario(
         scenario
     ).settings.pauses.pause_ranges_list

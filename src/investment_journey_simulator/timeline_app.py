@@ -468,13 +468,28 @@ def build_span_list(plan: TimelinePlan) -> list[tuple]:
     return [
         (
             pause_range.start_date,
-            pause_range.end_date,
+            # A range names its last silent month; a bar is drawn
+            # to an exclusive end, so the span reaches the month
+            # money starts again without covering it.
+            _add_span_end_date(pause_range.end_date),
             "Contributions paused",
         )
         for pause_range in compile_settings(
             plan
         ).pauses.pause_ranges_list
     ]
+
+
+def _add_span_end_date(last_silent_date: date) -> date:
+    """The month a drawn span stops at, given its last month."""
+    zero_based_int = (
+        last_silent_date.year * MONTHS_IN_YEAR_INT
+        + last_silent_date.month
+    )
+    year_int, month_int = divmod(
+        zero_based_int, MONTHS_IN_YEAR_INT
+    )
+    return date(year_int, month_int + 1, 1)
 
 
 def describe_amount_unit_str(event_type_str: str) -> str:

@@ -208,7 +208,10 @@ def build_paused_journey() -> PlanScenario:
                 MONTHLY_AMOUNT_FLOAT,
             ),
             TimelineEvent(EVENT_PAUSE_STR, date(2031, 1, 1)),
-            TimelineEvent(EVENT_RESUME_STR, date(2033, 12, 1)),
+            # Three years off means the first payment back is January
+            # 2034: a resume is the month money restarts, not
+            # the last month it did not.
+            TimelineEvent(EVENT_RESUME_STR, date(2034, 1, 1)),
         ],
     )
 

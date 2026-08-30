@@ -169,8 +169,10 @@ def build_journey_specification_list() -> list:
                     TimelineEvent(
                         EVENT_PAUSE_STR, date(2033, 1, 1)
                     ),
+                    # Two years off: paying again from January
+                    # 2035, so 2033 and 2034 are the silent ones.
                     TimelineEvent(
-                        EVENT_RESUME_STR, date(2034, 12, 1)
+                        EVENT_RESUME_STR, date(2035, 1, 1)
                     ),
                 ],
             ),

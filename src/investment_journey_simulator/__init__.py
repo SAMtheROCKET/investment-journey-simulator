@@ -49,4 +49,4 @@ Layout:
 #   Data provenance
 #       Dated in `docs/SOURCES.md`, and versioned by nothing here.
 #       Statutory rates change on their own calendar.
-__version__: str = "4.3.1"
+__version__: str = "4.4.0"
