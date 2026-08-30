@@ -31,6 +31,7 @@ from investment_journey_simulator.models import (
     FundConfiguration,
     InstalmentOverride,
     OneOffContribution,
+    OneOffWithdrawal,
     PauseRange,
     PauseSettings,
     RebalanceSettings,
@@ -54,6 +55,8 @@ EVENT_STEPUP_STR: str = "Start yearly step-up"
 EVENT_PAUSE_STR: str = "Pause contributions"
 EVENT_RESUME_STR: str = "Resume contributions"
 EVENT_LUMPSUM_STR: str = "One-off investment"
+EVENT_LUMPSUM_WITHDRAW_STR: str = "One-off withdrawal"
+EVENT_WITHDRAW_ALL_STR: str = "Withdraw everything and close"
 EVENT_WITHDRAW_STR: str = "Start withdrawing"
 EVENT_RETIRE_STR: str = "Retire (stop investing, start income)"
 EVENT_INCOME_STR: str = "Salary starts or changes"
@@ -69,7 +72,9 @@ EVENT_TYPE_TUPLE: tuple = (
     EVENT_PAUSE_STR,
     EVENT_RESUME_STR,
     EVENT_LUMPSUM_STR,
+    EVENT_LUMPSUM_WITHDRAW_STR,
     EVENT_WITHDRAW_STR,
+    EVENT_WITHDRAW_ALL_STR,
     EVENT_RETIRE_STR,
     EVENT_INCOME_STR,
     EVENT_REBALANCE_STR,
@@ -93,6 +98,7 @@ EVENT_GROUP_TUPLE: tuple = (
         (
             EVENT_START_SIP_STR,
             EVENT_LUMPSUM_STR,
+            EVENT_LUMPSUM_WITHDRAW_STR,
             EVENT_STEPUP_STR,
             EVENT_WITHDRAW_STR,
             EVENT_REBALANCE_STR,
@@ -106,6 +112,7 @@ EVENT_GROUP_TUPLE: tuple = (
             EVENT_RESUME_STR,
             EVENT_STOP_WITHDRAW_STR,
             EVENT_RETIRE_STR,
+            EVENT_WITHDRAW_ALL_STR,
         ),
     ),
     (
@@ -144,9 +151,20 @@ EVENT_EXPLANATION_DICT: dict[str, str] = {
         "A single extra investment - a bonus, a maturity, a gift. "
         "It compounds from this month."
     ),
+    EVENT_LUMPSUM_WITHDRAW_STR: (
+        "Take a single amount out - a car, a deposit, a medical "
+        "bill. Units are sold to raise it, so it is taxed, and "
+        "what is left carries on compounding without it."
+    ),
     EVENT_WITHDRAW_STR: (
         "Begin taking a fixed amount out every month. The plan "
         "reports the exact month the money would run out."
+    ),
+    EVENT_WITHDRAW_ALL_STR: (
+        "Sell everything and close the plan in this month. The "
+        "whole gain is realised at once, which is the most tax "
+        "a plan can pay in a single month, and nothing continues "
+        "afterwards - no instalment, no growth, no balance."
     ),
     EVENT_RETIRE_STR: (
         "Stop investing and start drawing an income in the same "
@@ -187,10 +205,17 @@ EVENT_NEEDS_AMOUNT_TUPLE: tuple = (
     EVENT_START_SIP_STR,
     EVENT_CHANGE_SIP_STR,
     EVENT_LUMPSUM_STR,
+    EVENT_LUMPSUM_WITHDRAW_STR,
     EVENT_WITHDRAW_STR,
     EVENT_RETIRE_STR,
     EVENT_INCOME_STR,
 )
+
+# Events that end the plan outright. Nothing after one of these
+# happens at all, which is why the compiler truncates the horizon
+# rather than merely zeroing the balance.
+EVENT_CLOSES_PLAN_TUPLE: tuple = (EVENT_WITHDRAW_ALL_STR,)
+
 EVENT_SETS_INSTALMENT_TUPLE: tuple = (
     EVENT_START_SIP_STR,
     EVENT_CHANGE_SIP_STR,
@@ -865,7 +890,82 @@ def compile_settings(
         instalment_override_list=(
             _collect_instalment_override_list(plan, active_policy)
         ),
+        one_off_withdrawals_list=_collect_one_off_withdrawal_list(
+            plan, active_policy
+        ),
+        liquidation_month_index_int=_resolve_closure_month_int(plan),
     )
+
+
+def _collect_one_off_withdrawal_list(
+    plan: TimelinePlan,
+    policy: PlanPolicy,
+) -> list[OneOffWithdrawal]:
+    """Turn every one-off withdrawal into a dated sale.
+
+    Brief:
+        The mirror of `_collect_one_off_list`. A car bought in year
+        eight is paid for out of year eight's corpus, and the
+        months after it compound on what is left.
+
+    Arguments:
+        plan (TimelinePlan): Plan being compiled.
+        policy (PlanPolicy): Supplies the fallback fund name.
+
+    Returns:
+        List[OneOffWithdrawal]: Dated one-off withdrawals.
+
+    Warning:
+        A withdrawal naming no fund is met from the whole
+        portfolio pro rata, which leaves the weights where they
+        were. Naming one takes it all from that fund, which does
+        not.
+    """
+    return [
+        OneOffWithdrawal(
+            _month_index_int(plan, event.event_date),
+            float(event.amount_float),
+            event.fund_name_str,
+        )
+        for event in plan.ordered_event_list
+        if event.event_type_str == EVENT_LUMPSUM_WITHDRAW_STR
+    ]
+
+
+def _resolve_closure_month_int(plan: TimelinePlan) -> int | None:
+    """Find the month the plan is closed in, if it is.
+
+    Brief:
+        The earliest full exit wins. A second one is unreachable -
+        there is nothing left to sell and the state machine says
+        so - but taking the earliest means a plan that somehow
+        carries two still behaves like one that carries the first.
+
+    Arguments:
+        plan (TimelinePlan): Plan being compiled.
+
+    Returns:
+        Optional[int]: Month index of the closure, or None when
+            the plan runs to the end of its horizon.
+
+    Warning:
+        A closure dated past the horizon is dropped rather than
+        clamped to the last month. Clamping would silently move a
+        reader's event to a month they did not choose, and closing
+        on the final month is indistinguishable from not closing
+        at all except in the tax it realises.
+    """
+    month_list = [
+        _month_index_int(plan, event.event_date)
+        for event in plan.ordered_event_list
+        if event.event_type_str == EVENT_WITHDRAW_ALL_STR
+    ]
+    usable_list = [
+        month_int
+        for month_int in month_list
+        if 0 <= month_int < plan.horizon_years_int * MONTHS_IN_YEAR_INT
+    ]
+    return min(usable_list) if usable_list else None
 
 
 def _resolve_pauses(plan: TimelinePlan) -> PauseSettings:
@@ -890,8 +990,115 @@ def _resolve_pauses(plan: TimelinePlan) -> PauseSettings:
         pause_ranges_list=(
             _collect_pause_range_list(plan)
             + _collect_withdrawal_stop_list(plan)
+            + _collect_closure_stop_list(plan)
         )
     )
+
+
+def _find_next_event_date(
+    plan: TimelinePlan,
+    event_type_str: str,
+    after_date: date,
+) -> date | None:
+    """The first event of one type strictly after a date."""
+    for event in plan.ordered_event_list:
+        if event.event_type_str != event_type_str:
+            continue
+        if event.event_date > after_date:
+            return event.event_date
+    return None
+
+
+def _collect_closure_stop_list(
+    plan: TimelinePlan,
+) -> list[PauseRange]:
+    """Turn every full exit into a quiet stretch on both sides.
+
+    Brief:
+        Closing a plan sells everything, and then nothing happens
+        until the reader says otherwise. Expressing that as two
+        pauses means no new mechanism has to be trusted: the
+        engine has stopped contributions and withdrawals this way
+        since long before a plan could be closed.
+
+    Arguments:
+        plan (TimelinePlan): Plan being compiled.
+
+    Returns:
+        List[PauseRange]: One contribution stop and one withdrawal
+            stop for each closure, each running until the reader
+            restarts that flow or until the horizon ends.
+
+    Warning:
+        The stop begins the month *after* the closure, not the
+        month of it. A plan that closes in June still pays June's
+        instalment before it sells, which is what a reader who
+        placed both in June asked for.
+    """
+    range_list: list[PauseRange] = []
+    for event in plan.ordered_event_list:
+        if event.event_type_str == EVENT_WITHDRAW_ALL_STR:
+            range_list.extend(
+                _build_quiet_range_list(plan, event.event_date)
+            )
+    return range_list
+
+
+def _build_quiet_range_list(
+    plan: TimelinePlan,
+    closure_date: date,
+) -> list[PauseRange]:
+    """The stretch after one closure in which nothing happens.
+
+    Brief:
+        One range per flow, each ending when the reader restarts
+        that flow, or at the horizon when they never do.
+
+    Arguments:
+        plan (TimelinePlan): Plan being compiled.
+        closure_date (date): Month the plan was closed in.
+
+    Returns:
+        List[PauseRange]: Contribution and withdrawal stops.
+
+    Warning:
+        A restart in the very next month leaves no quiet stretch
+        at all, and the empty range is dropped rather than being
+        emitted backwards.
+    """
+    quiet_from_date = _add_months_date(closure_date, 1)
+    range_list: list[PauseRange] = []
+    for scope_str, restart_event_str in (
+        (PAUSE_SCOPE_SIP_STR, EVENT_START_SIP_STR),
+        (PAUSE_SCOPE_WITHDRAWAL_STR, EVENT_WITHDRAW_STR),
+    ):
+        restart_date = _find_next_event_date(
+            plan, restart_event_str, closure_date
+        )
+        quiet_to_date = (
+            _add_months_date(restart_date, -1)
+            if restart_date is not None
+            else plan.end_date
+        )
+        if quiet_to_date >= quiet_from_date:
+            range_list.append(
+                PauseRange(
+                    quiet_from_date, quiet_to_date, scope_str
+                )
+            )
+    return range_list
+
+
+def _add_months_date(anchor_date: date, offset_int: int) -> date:
+    """Move a month-start date by whole months."""
+    zero_based_int = (
+        anchor_date.year * MONTHS_IN_YEAR_INT
+        + anchor_date.month
+        - 1
+        + int(offset_int)
+    )
+    year_int, month_int = divmod(zero_based_int, MONTHS_IN_YEAR_INT)
+    return date(year_int, month_int + 1, 1)
 
 
 def _apply_income_to_tax(

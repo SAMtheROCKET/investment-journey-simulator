@@ -33,9 +33,17 @@ than a truth and is therefore worth stating plainly:
     1. opening lump sums, in month zero only
     2. one-off contributions dated to this month
     3. the instalment, if instalments are paid at month start
-    4. the withdrawal
-    5. the rebalance
-    6. the instalment, if instalments are paid at month end
+    4. the standing withdrawal
+    5. any one-off withdrawals dated to this month
+    6. the rebalance
+    7. the instalment, if instalments are paid at month end
+    8. the closure, if the plan ends in this month
+
+The standing withdrawal is met before a lump sum out, because it is
+the arrangement already running; a lump sum is the exceptional act
+and takes what is left. The closure comes last of all, so a plan
+that ends in June still pays June's instalment and rebalances June
+before it sells.
 
 Everything is valued at the close of the month, so an instalment
 paid at the start has already earned that month's growth by the
@@ -601,10 +609,12 @@ class ReferenceSimulator:
         withdrawn_float = self._withdraw(
             month_index_int, month_date
         )
+        withdrawn_float += self._withdraw_one_offs(month_index_int)
         self._rebalance_if_due(month_index_int)
         contributed_float += self._pay_in_at_end(
             month_index_int, month_date
         )
+        withdrawn_float += self._close_if_due(month_index_int)
         self._outcome.monthly_value_list.append(
             sum(self._value_dict.values())
         )
@@ -844,6 +854,80 @@ class ReferenceSimulator:
         if rebalance.trigger_str == "CALENDAR_AND_BAND":
             return calendar_bool and self._is_band_breached_bool()
         return calendar_bool
+
+    def _take_from_every_fund(self, amount_float: float) -> float:
+        """Raise one amount pro rata across the whole portfolio."""
+        total_float = sum(self._value_dict.values())
+        if total_float <= 0.0 or amount_float <= 0.0:
+            return 0.0
+        wanted_float = min(amount_float, total_float)
+        paid_float = 0.0
+        for fund in self._fund_list:
+            share_float = (
+                self._value_dict[fund.name_str] / total_float
+            )
+            taken_float = min(
+                wanted_float * share_float,
+                self._value_dict[fund.name_str],
+            )
+            self._value_dict[fund.name_str] -= taken_float
+            self._withdrawn_dict[fund.name_str] += taken_float
+            paid_float += taken_float
+        return paid_float
+
+    def _take_from_one_fund(
+        self, fund_name_str: str, amount_float: float
+    ) -> float:
+        """Raise one amount from a single named fund."""
+        if fund_name_str not in self._value_dict:
+            return 0.0
+        taken_float = min(
+            amount_float, self._value_dict[fund_name_str]
+        )
+        if taken_float <= 0.0:
+            return 0.0
+        self._value_dict[fund_name_str] -= taken_float
+        self._withdrawn_dict[fund_name_str] += taken_float
+        return taken_float
+
+    def _withdraw_one_offs(self, month_index_int: int) -> float:
+        """Every lump sum dated out of this month."""
+        paid_float = 0.0
+        for withdrawal in self._settings.one_off_withdrawals_list:
+            if int(withdrawal.month_index_int) != int(
+                month_index_int
+            ):
+                continue
+            amount_float = float(withdrawal.amount_float)
+            if amount_float <= 0.0:
+                continue
+            if withdrawal.fund_name_str:
+                paid_float += self._take_from_one_fund(
+                    withdrawal.fund_name_str, amount_float
+                )
+            else:
+                paid_float += self._take_from_every_fund(
+                    amount_float
+                )
+        return paid_float
+
+    def _close_if_due(self, month_index_int: int) -> float:
+        """Sell the lot, if the plan ends in this month.
+
+        Nothing here stops the months that follow. The compiler
+        pauses both flows until the reader restarts one, and an
+        empty portfolio grows to nothing on its own, so a closed
+        plan reads as flat zero without this method knowing
+        anything about the months after it.
+        """
+        closure_month_int = self._settings.liquidation_month_index_int
+        if closure_month_int is None:
+            return 0.0
+        if int(month_index_int) != int(closure_month_int):
+            return 0.0
+        return self._take_from_every_fund(
+            sum(self._value_dict.values())
+        )
 
     def _rebalance_if_due(self, month_index_int: int) -> None:
         """Realign to the target weights when a trigger fires.

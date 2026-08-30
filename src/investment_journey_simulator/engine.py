@@ -275,10 +275,58 @@ class PortfolioSimulator:
 
         Warning:
             Rebalancing happens after the withdrawal so that the
-            target weights hold on the post-withdrawal corpus.
+            target weights hold on the post-withdrawal corpus. A
+            closure happens after everything else, because the
+            plan ends at the close of that month rather than at
+            its start.
         """
         month_date = self._month_dates_list[month_index_int]
         invests_at_start_bool = self._settings.sip_at_month_start_bool
+        contributed_float = self._pay_money_in_float(
+            month_index_int, month_date, invests_at_start_bool
+        )
+        withdrawal_tuple = self._take_money_out_tuple(
+            month_index_int, month_date
+        )
+        self._rebalance_if_due(month_index_int, month_date)
+        if not invests_at_start_bool:
+            contributed_float += self._contribute_instalments_float(
+                month_index_int, month_date, False
+            )
+        withdrawal_tuple = self._close_plan_if_due(
+            withdrawal_tuple, month_index_int, month_date
+        )
+        self._record_snapshot(
+            month_index_int,
+            month_date,
+            contributed_float,
+            withdrawal_tuple,
+        )
+
+    def _pay_money_in_float(
+        self,
+        month_index_int: int,
+        month_date: date,
+        invests_at_start_bool: bool,
+    ) -> float:
+        """Every rupee that goes in before the withdrawal does.
+
+        Brief:
+            Opening balances, dated lump sums, and the instalment
+            when instalments are paid at the start of a month.
+
+        Arguments:
+            month_index_int (int): Month index being simulated.
+            month_date (date): Calendar month being simulated.
+            invests_at_start_bool (bool): Instalment timing.
+
+        Returns:
+            float: Total external principal paid in.
+
+        Warning:
+            An end-of-month instalment is not included here; it
+            lands after the withdrawal and the rebalance.
+        """
         contributed_float = self._seed_initial_corpus_float(
             month_index_int
         )
@@ -289,19 +337,225 @@ class PortfolioSimulator:
             contributed_float += self._contribute_instalments_float(
                 month_index_int, month_date, True
             )
-        withdrawal_tuple = self._withdraw_proportionally(
-            month_index_int, month_date
-        )
-        self._rebalance_if_due(month_index_int, month_date)
-        if not invests_at_start_bool:
-            contributed_float += self._contribute_instalments_float(
-                month_index_int, month_date, False
-            )
-        self._record_snapshot(
+        return contributed_float
+
+    def _take_money_out_tuple(
+        self,
+        month_index_int: int,
+        month_date: date,
+    ) -> tuple[float, float, float]:
+        """The standing withdrawal, then any lump sums.
+
+        Brief:
+            Both can fall in one month, and both are met from the
+            same corpus, so they are raised in one place.
+
+        Arguments:
+            month_index_int (int): Month index being simulated.
+            month_date (date): Calendar month being simulated.
+
+        Returns:
+            Tuple[float, float, float]: Asked for, raised, paid.
+
+        Warning:
+            The closure is deliberately not here. It runs after
+            the rebalance and the end-of-month instalment, because
+            it ends the month rather than being part of its
+            ordinary business.
+        """
+        return self._add_one_off_withdrawals(
+            self._withdraw_proportionally(
+                month_index_int, month_date
+            ),
             month_index_int,
             month_date,
-            contributed_float,
-            withdrawal_tuple,
+        )
+
+    def _liquidate_every_fund(
+        self,
+        month_index_int: int,
+        month_date: date,
+    ) -> tuple[float, float]:
+        """Empty every lot book and pay the proceeds out.
+
+        Brief:
+            Selling the balance and selling everything are not the
+            same operation. The first compares a running total
+            against each lot and can leave a fraction behind; the
+            second empties the book, so the plan afterwards holds
+            exactly nothing rather than nearly nothing.
+
+        Arguments:
+            month_index_int (int): Month index of the exit.
+            month_date (date): Calendar date of the exit.
+
+        Returns:
+            Tuple[float, float]: Proceeds, and what was paid out.
+
+        Warning:
+            Irreversible within a run. Every holding period ends
+            here, so the tax is whatever those lots had accrued.
+        """
+        raised_float = 0.0
+        received_float = 0.0
+        for holdings in self._holdings_list:
+            sale_outcome = holdings.sell_everything(
+                month_index_int, month_date
+            )
+            paid_float = max(
+                0.0,
+                sale_outcome.proceeds_float
+                - sale_outcome.charges_float,
+            )
+            holdings.register_withdrawal(paid_float)
+            raised_float += sale_outcome.proceeds_float
+            received_float += paid_float
+        return raised_float, received_float
+
+    def _add_one_off_withdrawals(
+        self,
+        withdrawal_tuple: tuple[float, float, float],
+        month_index_int: int,
+        month_date: date,
+    ) -> tuple[float, float, float]:
+        """Take out every lump sum dated to this month.
+
+        Brief:
+            A car, a deposit, a medical bill. Added to whatever the
+            standing withdrawal already took, so a month can carry
+            both.
+
+        Arguments:
+            withdrawal_tuple (tuple): Asked for, raised and paid so
+                far this month.
+            month_index_int (int): Month index being simulated.
+            month_date (date): Calendar month being simulated.
+
+        Returns:
+            tuple: The same three figures with the lump sums added.
+
+        Warning:
+            The standing withdrawal is met first, because it is the
+            arrangement already running; a lump sum is the
+            exceptional act and takes what is left. Either can go
+            unmet when the corpus cannot cover it.
+        """
+        requested_float, proceeds_float, paid_float = (
+            withdrawal_tuple
+        )
+        for withdrawal in self._settings.one_off_withdrawals_list:
+            if int(withdrawal.month_index_int) != int(
+                month_index_int
+            ):
+                continue
+            amount_float = float(withdrawal.amount_float)
+            if amount_float <= 0.0:
+                continue
+            raised_float, received_float = self._sell_for_amount(
+                amount_float,
+                withdrawal.fund_name_str,
+                month_index_int,
+                month_date,
+            )
+            requested_float += amount_float
+            proceeds_float += raised_float
+            paid_float += received_float
+        return requested_float, proceeds_float, paid_float
+
+    def _sell_for_amount(
+        self,
+        amount_float: float,
+        fund_name_str: str,
+        month_index_int: int,
+        month_date: date,
+    ) -> tuple[float, float]:
+        """Raise one amount, from one fund or from all of them.
+
+        Brief:
+            Naming no fund spreads the sale across the portfolio in
+            proportion to what each holds, which leaves the weights
+            where they were. Naming one takes the whole amount from
+            that fund, which does not.
+
+        Arguments:
+            amount_float (float): Rupees to raise.
+            fund_name_str (str): Fund to sell, or empty for all.
+            month_index_int (int): Month index being simulated.
+            month_date (date): Calendar month being simulated.
+
+        Returns:
+            Tuple[float, float]: Gross proceeds raised, and the
+                money that reached the investor after charges.
+
+        Warning:
+            A name that matches no fund raises nothing, rather than
+            falling back to the portfolio. Silently taking money
+            from somewhere the reader did not name would be worse
+            than an amount that visibly went unmet.
+        """
+        value_dict = self._build_value_dict(month_index_int)
+        if fund_name_str:
+            if fund_name_str not in value_dict:
+                return 0.0, 0.0
+            value_dict = {
+                fund_name_str: value_dict[fund_name_str]
+            }
+        total_value_float = sum(value_dict.values())
+        if total_value_float <= MONEY_TOLERANCE_FLOAT:
+            return 0.0, 0.0
+        return self._raise_from_each_fund(
+            min(amount_float, total_value_float),
+            value_dict,
+            total_value_float,
+            month_index_int,
+            month_date,
+        )
+
+    def _close_plan_if_due(
+        self,
+        withdrawal_tuple: tuple[float, float, float],
+        month_index_int: int,
+        month_date: date,
+    ) -> tuple[float, float, float]:
+        """Sell everything, if this is the month the plan closes.
+
+        Brief:
+            The whole corpus is realised at once, which is
+            normally the most tax a plan ever pays in one month.
+
+        Arguments:
+            withdrawal_tuple (tuple): Asked for, raised and paid.
+            month_index_int (int): Month index being simulated.
+            month_date (date): Calendar month being simulated.
+
+        Returns:
+            tuple: The same three figures with the exit added.
+
+        Warning:
+            Runs last, so a closing month invests and rebalances
+            exactly as any other does. Nothing here stops the
+            months that follow: selling every lot leaves nothing
+            to grow, and the compiler pauses both flows until the
+            reader restarts one. A closed plan is flat at zero
+            because it is empty, not because the engine stopped.
+        """
+        closure_month_int = self._settings.liquidation_month_index_int
+        if closure_month_int is None:
+            return withdrawal_tuple
+        if int(month_index_int) != int(closure_month_int):
+            return withdrawal_tuple
+        total_value_float = self._calculate_total_value_float(
+            month_index_int
+        )
+        if total_value_float <= MONEY_TOLERANCE_FLOAT:
+            return withdrawal_tuple
+        raised_float, received_float = self._liquidate_every_fund(
+            month_index_int, month_date
+        )
+        return (
+            withdrawal_tuple[0] + total_value_float,
+            withdrawal_tuple[1] + raised_float,
+            withdrawal_tuple[2] + received_float,
         )
 
     def _seed_initial_corpus_float(
@@ -643,45 +897,81 @@ class PortfolioSimulator:
         """Sell every fund's share and pay the investor the net.
 
         Brief:
-            Each fund contributes in proportion to what it holds,
-            so the weights are the same after the sale as before.
+            Each fund gives up its own share, so the weights are
+            unchanged by the sale.
 
         Arguments:
             requested_float (float): Rupees the plan asked for.
-            value_dict (Dict[str, float]): Fund values before sale.
-            total_value_float (float): Portfolio value before sale.
+            value_dict (Dict[str, float]): Values before the sale.
+            total_value_float (float): Their total.
             month_index_int (int): Month index being simulated.
             month_date (date): Calendar month being simulated.
 
         Returns:
-            Tuple[float, float]: Gross proceeds raised and the money
-                that reached the investor after charges.
-
-        Warning:
-            The exit load and transaction tax leave the portfolio
-            with the units; they are not a reporting line.
+            Tuple[float, float]: Proceeds, and what was paid out.
         """
         total_proceeds_float = 0.0
         total_paid_float = 0.0
         for holdings in self._holdings_list:
             fund_name_str = holdings.fund_configuration.name_str
+            # Raising from one named fund passes a mapping with
+            # only that fund in it; the rest are absent, not zero.
+            if fund_name_str not in value_dict:
+                continue
+            # Share first, then multiply. The other grouping,
+            # (requested * value) / total, is the same in algebra
+            # and not in floating point, and it moves the last bit
+            # of every withdrawal.
             fund_share_float = (
                 value_dict[fund_name_str] / total_value_float
             )
-            sale_outcome = holdings.sell_for_proceeds(
+            proceeds_float, paid_float = self._sell_one_fund(
+                holdings,
                 requested_float * fund_share_float,
                 month_index_int,
                 month_date,
             )
-            paid_float = max(
-                0.0,
-                sale_outcome.proceeds_float
-                - sale_outcome.charges_float,
-            )
-            holdings.register_withdrawal(paid_float)
-            total_proceeds_float += sale_outcome.proceeds_float
+            total_proceeds_float += proceeds_float
             total_paid_float += paid_float
         return total_proceeds_float, total_paid_float
+
+    def _sell_one_fund(
+        self,
+        holdings: FundHoldings,
+        amount_float: float,
+        month_index_int: int,
+        month_date: date,
+    ) -> tuple[float, float]:
+        """Raise one amount from one fund and book the payout.
+
+        Brief:
+            The single place a sale becomes a withdrawal, so the
+            charges come off the payout exactly once.
+
+        Arguments:
+            holdings (FundHoldings): Fund being sold.
+            amount_float (float): Rupees to raise from it.
+            month_index_int (int): Month index of the sale.
+            month_date (date): Calendar date of the sale.
+
+        Returns:
+            Tuple[float, float]: Proceeds, and what was paid out.
+
+        Warning:
+            Used for investor withdrawals only. A rebalance sells
+            through the same holdings but reinvests the proceeds,
+            so it must never book a withdrawal here.
+        """
+        sale_outcome = holdings.sell_for_proceeds(
+            amount_float, month_index_int, month_date
+        )
+        paid_float = max(
+            0.0,
+            sale_outcome.proceeds_float
+            - sale_outcome.charges_float,
+        )
+        holdings.register_withdrawal(paid_float)
+        return sale_outcome.proceeds_float, paid_float
 
     def _rebalance_if_due(
         self,

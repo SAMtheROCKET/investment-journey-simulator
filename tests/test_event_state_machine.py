@@ -24,12 +24,15 @@ from investment_journey_simulator.event_order import (
     find_order_finding_list,
 )
 from investment_journey_simulator.timeline import (
+    EVENT_LUMPSUM_STR,
+    EVENT_LUMPSUM_WITHDRAW_STR,
     EVENT_PAUSE_STR,
     EVENT_RESUME_STR,
     EVENT_RETIRE_STR,
     EVENT_START_SIP_STR,
     EVENT_STEPUP_STR,
     EVENT_STOP_WITHDRAW_STR,
+    EVENT_WITHDRAW_ALL_STR,
     EVENT_WITHDRAW_STR,
     TimelineEvent,
 )
@@ -232,3 +235,149 @@ def test_the_prospective_check_uses_the_state_too():
         )
         == ""
     )
+
+
+# --- Taking money out, and closing the plan -----------------------
+#
+# Two rules the machines do not express, added when the timeline
+# learned to take a lump out and to close a plan for good.
+
+
+def test_a_lump_withdrawal_needs_money_to_have_gone_in():
+    """You cannot take out of a plan nothing has gone into.
+
+    REFERENCE: G4-SYNTHETIC.
+    """
+    finding_list = find_order_finding_list(
+        [
+            TimelineEvent(
+                EVENT_LUMPSUM_WITHDRAW_STR,
+                date(2026, 1, 1),
+                100000.0,
+            )
+        ]
+    )
+    assert len(finding_list) == 1
+    assert "nothing to take" in finding_list[0].sentence_str
+
+
+def test_a_lump_sum_alone_is_enough_to_withdraw_from():
+    """Funding is not the same as investing monthly.
+
+    REFERENCE: G4-SYNTHETIC. A state machine keyed on the SIP
+    would wrongly refuse a plan funded once and drawn on later,
+    which is why this rule is an existence check rather than a
+    machine.
+    """
+    assert (
+        find_order_finding_list(
+            [
+                TimelineEvent(
+                    EVENT_LUMPSUM_STR, date(2026, 1, 1), 500000.0
+                ),
+                TimelineEvent(
+                    EVENT_LUMPSUM_WITHDRAW_STR,
+                    date(2030, 1, 1),
+                    100000.0,
+                ),
+            ]
+        )
+        == []
+    )
+
+
+def test_nothing_ordinary_may_follow_a_closure():
+    """A closed plan has nothing left for an event to act on.
+
+    REFERENCE: G4-SYNTHETIC.
+    """
+    finding_list = find_order_finding_list(
+        [
+            TimelineEvent(
+                EVENT_START_SIP_STR, date(2026, 1, 1), 25000.0
+            ),
+            TimelineEvent(
+                EVENT_WITHDRAW_ALL_STR, date(2036, 1, 1)
+            ),
+            TimelineEvent(
+                EVENT_STEPUP_STR,
+                date(2038, 1, 1),
+                percent_float=10.0,
+            ),
+        ]
+    )
+    assert len(finding_list) == 1
+    assert finding_list[0].event_type_str == EVENT_STEPUP_STR
+    assert "closed" in finding_list[0].sentence_str
+
+
+def test_investing_again_reopens_a_closed_plan():
+    """Stopping and starting again is an ordinary life.
+
+    REFERENCE: G4-SYNTHETIC. The corpus is empty, so the plan
+    builds from nothing - but nothing forbids building.
+    """
+    assert (
+        find_order_finding_list(
+            [
+                TimelineEvent(
+                    EVENT_START_SIP_STR, date(2026, 1, 1), 25000.0
+                ),
+                TimelineEvent(
+                    EVENT_WITHDRAW_ALL_STR, date(2036, 1, 1)
+                ),
+                TimelineEvent(
+                    EVENT_START_SIP_STR, date(2039, 1, 1), 40000.0
+                ),
+                TimelineEvent(
+                    EVENT_STEPUP_STR,
+                    date(2040, 1, 1),
+                    percent_float=10.0,
+                ),
+            ]
+        )
+        == []
+    )
+
+
+def test_a_reopened_plan_must_be_funded_again_before_a_withdrawal():
+    """Reopening empties the plan as well as unlocking it.
+
+    REFERENCE: G4-SYNTHETIC. A closure returns both machines and
+    the funding flag to where they started, so a withdrawal placed
+    after a close but before the restart has nothing to take.
+    """
+    finding_list = find_order_finding_list(
+        [
+            TimelineEvent(
+                EVENT_START_SIP_STR, date(2026, 1, 1), 25000.0
+            ),
+            TimelineEvent(
+                EVENT_WITHDRAW_ALL_STR, date(2036, 1, 1)
+            ),
+            TimelineEvent(
+                EVENT_LUMPSUM_WITHDRAW_STR,
+                date(2038, 1, 1),
+                100000.0,
+            ),
+        ]
+    )
+    assert len(finding_list) == 1
+
+
+def test_a_second_closure_has_nothing_to_close():
+    """REFERENCE: G4-SYNTHETIC."""
+    finding_list = find_order_finding_list(
+        [
+            TimelineEvent(
+                EVENT_START_SIP_STR, date(2026, 1, 1), 25000.0
+            ),
+            TimelineEvent(
+                EVENT_WITHDRAW_ALL_STR, date(2036, 1, 1)
+            ),
+            TimelineEvent(
+                EVENT_WITHDRAW_ALL_STR, date(2040, 1, 1)
+            ),
+        ]
+    )
+    assert len(finding_list) == 1

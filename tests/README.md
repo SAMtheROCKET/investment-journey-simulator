@@ -5,7 +5,7 @@ python -m pytest tests -q                       # run everything
 python -m pytest tests -q --cov=investment_journey_simulator   # with coverage
 ```
 
-**Current status: 2,508 passed · 4 intentionally skipped · 93%
+**Current status: 2,533 passed · 4 intentionally skipped · 93%
 statement coverage.**
 
 The four skips are deliberate and self-describing: two files exempt
@@ -18,7 +18,7 @@ runner, so widget-level failures are caught by CI.
 Quality gate (all green, all in CI):
 
 ```bash
-python -m pytest                       # 2,508 passed, 4 skipped
+python -m pytest                       # 2,533 passed, 4 skipped
 ruff check src tests tools streamlit_app.py
 python tools/check_house_style.py      # 0 long lines, 0 long functions
 mypy                                   # 0 errors
@@ -250,6 +250,7 @@ luck, and states which event wins when two land in one month.
 | 4,800 taxed plans | against `reference_tax`, a second lot book |
 | 4,500 taxed plans | against the invariants |
 | 1,800 zero-return plans | against the conservation identity |
+| 3,000 untaxed and 1,000 taxed plans carrying the two money-out events | 1,186 with a lump withdrawal, 476 with a liquidation, 188 with both |
 | 17 hand-built collisions | withdrawal starting inside a pause, pause opening on a rebalancing month, two instalment changes on one month, a fund joining a portfolio already paying out, a withdrawal larger than the corpus, negative returns |
 
 The generators cover every feature the engine has, and the coverage
@@ -355,6 +356,39 @@ other.
 | Cash conservation with tax and charges live | an exact identity at zero return |
 | Grandfathering, automatic surcharge bands | hand-written tests only |
 | Money-weighted return, goal seek, stochastic sampling | hand-written tests only |
+
+### G3e - Taking money out
+
+`test_money_out.py` covers the two events added in 4.3.0: a lump
+sum taken out of one month, and a full exit that closes the plan.
+Both are held the same three ways as everything else - hand
+arithmetic, the independent simulators, and invariants - and the
+combinations get more attention than the features, because a lump
+withdrawal on a rebalancing month crosses two mechanisms that were
+written separately.
+
+Two defects surfaced while it was being built, both from the
+cross-check rather than from a hand-written case:
+
+| Defect | Found by |
+|---|---|
+| Raising money from one *named* fund looped over every holding while being handed a mapping containing one, and raised a `KeyError` | the first cross-check run |
+| A closure left nine nano-rupees behind, because selling a sum equal to the balance is not the same operation as selling everything | a 3,000-plan fuzz, on one seed |
+
+The second is worth the sentence it costs. Nine nano-rupees on a
+₹3.55 crore corpus is not money, and no chart or table would ever
+show it. But "this plan holds exactly nothing" is a claim about
+kind rather than size, and a later feature asking `value > 0` would
+have got the wrong answer. Closing now empties the lot book instead
+of raising a target amount, which cannot leave a remainder because
+there is no arithmetic left to round.
+
+One more thing that file records: the hand-computed gap a
+₹2,00,000 withdrawal opens is that amount compounded for **119**
+months, not 120. The sale happens at the close of its own month, so
+that month's growth is already earned. The off-by-one lands within
+one per cent - the size of error a test written to agree with the
+code would have enshrined without anybody noticing.
 
 ### Headless application runs
 

@@ -310,21 +310,47 @@ def check_month_is_coherent(snapshot, index_int, settings) -> list:
             f"portfolio != sum of funds at month {index_int}"
         )
     if snapshot.unmet_withdrawal_float > PAISA_TOLERANCE_FLOAT:
-        paid_after_float = (
-            0.0
-            if settings.sip_at_month_start_bool
-            else snapshot.monthly_sip_float
+        broken_list.extend(
+            check_shortfall_is_honest(snapshot, index_int, settings)
         )
-        residue_float = (
-            snapshot.portfolio_value_float - paid_after_float
-        )
-        if residue_float > 1.0:
-            broken_list.append(
-                f"month {index_int} left "
-                f"{snapshot.unmet_withdrawal_float:,.2f} unpaid "
-                f"with {residue_float:,.2f} still held"
-            )
     return broken_list
+
+
+def names_a_fund_this_month_bool(index_int, settings) -> bool:
+    """Whether a lump withdrawal this month named one fund.
+
+    A withdrawal that names a fund may only be met from that fund,
+    so it can fall short while the rest of the portfolio is still
+    full. That is the engine keeping a promise, not breaking one:
+    taking the shortfall from a fund the reader did not name would
+    be worse than reporting it unmet.
+    """
+    return any(
+        int(withdrawal.month_index_int) == int(index_int)
+        and withdrawal.fund_name_str
+        for withdrawal in settings.one_off_withdrawals_list
+    )
+
+
+def check_shortfall_is_honest(snapshot, index_int, settings) -> list:
+    """A withdrawal may only fall short when the money is gone."""
+    if names_a_fund_this_month_bool(index_int, settings):
+        return []
+    paid_after_float = (
+        0.0
+        if settings.sip_at_month_start_bool
+        else snapshot.monthly_sip_float
+    )
+    residue_float = (
+        snapshot.portfolio_value_float - paid_after_float
+    )
+    if residue_float <= 1.0:
+        return []
+    return [
+        f"month {index_int} left "
+        f"{snapshot.unmet_withdrawal_float:,.2f} unpaid with "
+        f"{residue_float:,.2f} still held"
+    ]
 
 
 @pytest.mark.parametrize(

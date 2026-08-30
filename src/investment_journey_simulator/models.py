@@ -346,6 +346,24 @@ class OneOffContribution:
 
 
 @dataclass(frozen=True)
+class OneOffWithdrawal:
+    """A single amount taken out in one specific month.
+
+    The mirror of OneOffContribution, and deliberately a separate
+    record rather than a negative one: money going out is not
+    money going in with a sign flipped. It sells units, so it
+    realises a gain and is taxed, the exit load and transaction
+    tax come off what reaches the investor, and it can be capped
+    by a corpus too small to meet it. A contribution does none of
+    those things.
+    """
+
+    month_index_int: int
+    amount_float: float
+    fund_name_str: str = ""
+
+
+@dataclass(frozen=True)
 class SimulationSettings:
     """Every portfolio-level input needed to run a simulation."""
 
@@ -363,6 +381,41 @@ class SimulationSettings:
     instalment_override_list: list[InstalmentOverride] = field(
         default_factory=list
     )
+    one_off_withdrawals_list: list[OneOffWithdrawal] = field(
+        default_factory=list
+    )
+    # The month every holding is sold in, if there is one.
+    #
+    # This says liquidate, and *only* liquidate. It does not stop
+    # the instalment, because the engine has a mechanism for that
+    # already and two ways of stopping one flow would be one too
+    # many. A timeline that closes a plan compiles to this field
+    # *and* a pause on each flow, so the corpus goes to zero and
+    # then stays there; set this field alone and a running SIP
+    # will cheerfully rebuild the portfolio from nothing, which is
+    # the honest reading of the two instructions given.
+    liquidation_month_index_int: int | None = None
+
+    @property
+    def is_liquidated_bool(self) -> bool:
+        """Whether everything is sold at some point in the run.
+
+        Brief:
+            Asked by every report that has to tell a flat zero
+            caused by closing a plan apart from one caused by
+            running out of money.
+
+        Arguments:
+            None.
+
+        Returns:
+            bool: True when a liquidation month was set.
+
+        Warning:
+            True says the holdings were sold, not that the plan
+            ended. A plan can be liquidated and then restarted.
+        """
+        return self.liquidation_month_index_int is not None
 
     @property
     def total_months_int(self) -> int:

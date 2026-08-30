@@ -100,6 +100,9 @@ find it, rather than discover it by being surprised by a number.
 | **Marginal relief** | In slab mode the band rate is replaced by an effective rate holding the extra tax at or below the extra income. Computed before cess. | Crossing ₹50 lakh by one rupee would otherwise add over a lakh of surcharge in a single step. |
 | **Duplicate fund names** | Renamed to `Name (2)`, `Name (3)`. | Names key the holdings, the targets and the tax ledger. Duplicates would silently merge two funds into one. |
 | **Impossible inputs** | Returns at or below −100% and expense ratios outside 0-100% are clamped, not rejected. | Fractional powers of a negative base are undefined, and crashing on a typo helps nobody. |
+| **A one-off withdrawal naming a fund** | Comes entirely from that fund, and falls short if that fund cannot cover it. | Taking the remainder from a fund the reader did not name would be worse than reporting a shortfall they can see. |
+| **Closing a plan** | Sells every lot outright rather than raising an amount equal to the balance. | The two differ by float dust. "This plan holds exactly nothing" is a claim about kind, not size, and should be true rather than nearly true. |
+| **A closed plan that is started again** | Allowed. The corpus is empty, so it builds from nothing. | Retiring, spending the lot and going back to work is an ordinary life; a timeline that could not express it would be the poorer tool. |
 
 ## The order of events inside one month
 
@@ -110,15 +113,27 @@ it breaks a test rather than quietly moving every figure.
 1. opening lump sums, in month zero only
 2. one-off contributions dated to this month
 3. the instalment, if instalments are paid at month start
-4. the withdrawal
-5. the rebalance
-6. the instalment, if instalments are paid at month end
+4. the standing withdrawal
+5. any one-off withdrawals dated to this month
+6. the rebalance
+7. the instalment, if instalments are paid at month end
+8. the closure, if the plan is closed in this month
 
 Everything is valued at the close of the month. An instalment paid
 at the start has therefore earned that month's growth by the time
 the withdrawal is taken, and one paid at the end has not. Money
 bought back by a rebalance counts as bought at month end, so it
 does not earn the month it was bought in.
+
+Two orderings inside that list are choices rather than facts. The
+**standing withdrawal is met before a one-off**, because the
+standing one is the arrangement already running and a lump is the
+exceptional act; when the corpus cannot cover both, the exception
+is what falls short. And the **closure comes last**, so a plan that
+ends in June still pays June's instalment and rebalances June
+before it sells. Both reference simulators encode the same order,
+so changing either breaks a test rather than quietly moving every
+figure.
 
 ## House conventions
 

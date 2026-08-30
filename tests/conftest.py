@@ -114,30 +114,21 @@ def build_test_settings(
     portfolio_start_date: date = DEFAULT_START_DATE,
     one_off_contributions_list: list = None,
     instalment_override_list: list = None,
+    one_off_withdrawals_list: list = None,
+    liquidation_month_index_int: int = None,
 ) -> SimulationSettings:
     """Build settings with every optional feature switched off.
 
     Brief:
-        Each test switches on exactly the feature it exercises, so
-        failures point at one mechanism only.
-
-    Arguments:
-        horizon_years_int (int): Years to simulate.
-        sip_at_month_start_bool (bool): Instalment timing.
-        stepup (StepUpSettings): Escalation rules.
-        withdrawal (WithdrawalSettings): Exit rules.
-        pauses (PauseSettings): Pause rules.
-        rebalance (RebalanceSettings): Rebalancing rules.
-        tax (TaxSettings): Portfolio tax rules.
-        portfolio_start_date (date): First simulated month.
-        one_off_contributions_list (list): Dated extra investments.
-        instalment_override_list (list): Dated instalment changes.
+        Each test switches on exactly the feature it exercises.
+        Every argument maps to one settings field of the same
+        name, so they are not listed again here.
 
     Returns:
         SimulationSettings: Settings for one run.
 
     Warning:
-        Defaults deliberately disable every optional feature.
+        Defaults disable every optional feature.
     """
     return SimulationSettings(
         horizon_years_int=horizon_years_int,
@@ -152,6 +143,8 @@ def build_test_settings(
             one_off_contributions_list or []
         ),
         instalment_override_list=instalment_override_list or [],
+        one_off_withdrawals_list=one_off_withdrawals_list or [],
+        liquidation_month_index_int=liquidation_month_index_int,
     )
 
 

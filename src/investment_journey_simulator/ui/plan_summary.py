@@ -32,6 +32,9 @@ from investment_journey_simulator.plan_scenario import (
     PlanScenario,
     compile_scenario,
 )
+from investment_journey_simulator.time_utils import (
+    build_month_start_dates_list,
+)
 from investment_journey_simulator.ui.chrome import (
     render_assumption_bar,
     render_plan_pulse,
@@ -147,7 +150,51 @@ def assumption_chip_tuple(scenario: PlanScenario) -> tuple:
             False,
         ),
         (f"Tax rules: {compiled.regime.label_str}", False),
-        ("Nothing sold, so no tax in this figure", True),
+        build_selling_chip_tuple(compiled.settings),
+    ) + build_closure_chip_tuple(scenario, compiled.settings)
+
+
+def build_selling_chip_tuple(settings) -> tuple:
+    """Say whether the headline figure has had tax taken out.
+
+    Brief:
+        A plan that never sells anything pays no capital gains
+        tax, and saying so is the honest caveat. A plan that takes
+        a lump out, or closes, has sold - so the same sentence
+        becomes false, and a reader who trusted it would be
+        reading a post-tax figure as if it were pre-tax.
+
+    Arguments:
+        settings (SimulationSettings): The compiled plan.
+
+    Returns:
+        Tuple: One `(text, is_warning)` pair.
+
+    Warning:
+        Read from the compiled settings rather than the events, so
+        it stays true however the plan was built.
+    """
+    sells_bool = bool(
+        settings.one_off_withdrawals_list
+        or settings.withdrawal.is_enabled_bool
+        or settings.is_liquidated_bool
+    )
+    if sells_bool:
+        return ("Units are sold, so tax is included", False)
+    return ("Nothing sold, so no tax in this figure", True)
+
+
+def build_closure_chip_tuple(scenario, settings) -> tuple:
+    """Say when the plan ends, if it ends before its horizon."""
+    if not settings.is_liquidated_bool:
+        return ()
+    month_index_int = int(settings.liquidation_month_index_int)
+    date_list = build_month_start_dates_list(
+        scenario.plan.start_date, month_index_int + 1
+    )
+    closing_date = date_list[-1]
+    return (
+        (f"Closes {closing_date:%b %Y}, everything sold", True),
     )
 
 

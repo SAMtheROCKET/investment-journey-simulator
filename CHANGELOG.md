@@ -11,6 +11,71 @@ that file's shape is, and only changes when an old file would
 otherwise stop loading. The **Python API** is not versioned at all,
 because nothing outside this repository imports it.
 
+## 4.3.0 - 31 August 2026
+
+Two ways of taking money out that the timeline could not express.
+
+### Added
+
+- **One-off withdrawal.** A single amount taken out of a single
+  month - a car, a deposit, a medical bill - and the mirror of the
+  one-off investment that has always been there. It sells units, so
+  it realises a gain and is taxed; the exit load and transaction
+  tax come off what reaches you; and it can be capped by a corpus
+  too small to meet it. Naming a fund takes it all from that fund,
+  and falls short rather than quietly taking the remainder from a
+  fund you did not name.
+- **Withdraw everything and close.** Sells every holding in one
+  month, realising the whole gain at once, and stops both the
+  instalment and any standing withdrawal. The corpus is then zero
+  for the rest of the horizon, and the chart draws those years flat
+  rather than stopping short.
+- **A closed plan can be started again.** Place *Start investing*
+  after a close and a new phase opens from nothing. Retiring,
+  spending it and going back to work is an ordinary life, and a
+  timeline that could not express it would be the poorer tool.
+- Both events are refused where they make no sense: nothing may
+  follow a close except a restart, and nothing may be taken out of
+  a plan that was never funded. Being funded is an existence
+  question rather than a state one - money does not un-exist - so
+  a plan funded once by a lump sum may be drawn on years later.
+
+### Fixed
+
+- **A closure now empties the lot book rather than selling a sum
+  equal to the balance.** The two differ by float dust, and "this
+  plan holds exactly nothing" is a claim about kind rather than
+  size. Found by the cross-check, at nine nano-rupees on a ₹3.55
+  crore corpus.
+- **Raising money from one named fund no longer reads the other
+  funds.** The shared pro-rata helper looped over every holding
+  while being handed a mapping containing one, which raised a
+  `KeyError` the moment a fund was named. Also found by the
+  cross-check, on its first run.
+- The plan summary said "Nothing sold, so no tax in this figure"
+  even when the plan sold something. It now says which of the two
+  is true, and names the month a plan closes.
+
+### Changed
+
+- `SimulationSettings.closure_month_index_int` is
+  `liquidation_month_index_int`, because that is what the engine
+  does with it. Stopping the flows is a separate, composable
+  statement that the timeline compiler adds; the field alone
+  liquidates and nothing more, and a name implying otherwise was a
+  trap waiting for whoever set it by hand.
+
+### Verified
+
+- 3,000 untaxed and 1,000 taxed random plans cross-checked against
+  the two independently written simulators, agreeing to floating
+  point. Of those, 1,186 carried a lump withdrawal, 476 a
+  liquidation, and 188 both at once.
+- `tests/test_money_out.py` holds the arithmetic by hand: the gap a
+  ₹2,00,000 withdrawal opens is that amount compounded for the
+  months that remained *after* it - 119 of them, not 120, because
+  the sale happens at the close of its own month.
+
 ## 4.2.0 - 20 August 2026
 
 A release-blocking packaging defect, and its twin.

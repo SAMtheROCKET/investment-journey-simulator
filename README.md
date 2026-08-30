@@ -3,7 +3,7 @@
 **What your investments could become - and how much the decisions
 along the way change that number.**
 
-[![tests](https://img.shields.io/badge/tests-2%2C508%20passing-2ea44f)](tests/README.md)
+[![tests](https://img.shields.io/badge/tests-2%2C533%20passing-2ea44f)](tests/README.md)
 [![coverage](https://img.shields.io/badge/coverage-93%25-2ea44f)](tests/README.md)
 [![ruff](https://img.shields.io/badge/ruff-clean-2ea44f)](pyproject.toml)
 [![mypy](https://img.shields.io/badge/mypy-clean-2ea44f)](pyproject.toml)
@@ -164,15 +164,30 @@ Worked in full, with the inputs:
 ## Build a journey by clicking, not by filling in a form
 
 Point at any month on the timeline and it offers to add something
-there. Start a SIP, take a career break, resume, step up, withdraw,
-retire. The plan is the timeline; there is no separate form to keep
-in step with it.
+there. Start a SIP, take a career break, resume, step up, buy a car
+out of the pot, retire, or sell the lot and close the plan. The
+plan is the timeline; there is no separate form to keep in step
+with it.
+
+Money leaves the way it actually leaves. A **one-off withdrawal**
+takes a single amount out of a single month, and the report shows
+what it cost - ₹3,00,000 taken in year six of a ₹25,000 plan is
+₹13,62,399 off the final figure, because the money also stopped
+earning. **Withdraw everything and close** sells the lot, pays the
+tax on the whole gain at once, and leaves the chart flat at zero
+for the years that remain, rather than stopping short and letting
+you wonder.
+
+And a closed plan can be opened again. Place *Start investing*
+after a close and it builds from nothing, because retiring,
+spending it and going back to work is an ordinary life.
 
 Impossible sequences are refused as you build, not after you run:
-you cannot resume a SIP you never paused, and you cannot pause one
-that never started. That is a state machine, not a pile of `if`
-statements, and it is why the plan you draw is always a plan the
-engine can actually run.
+you cannot resume a SIP you never paused, you cannot pause one that
+never started, and you cannot spend money out of a plan nothing has
+gone into. That is a state machine, not a pile of `if` statements,
+and it is why the plan you draw is always a plan the engine can
+actually run.
 
 <!--
   SHORT LOOP 2 - the timeline.
@@ -242,7 +257,7 @@ src/
     diagrams/        money-flow pictures, drawn by code
     data/            index history the risk lab replays
     guides/          the checklists the Guides screen serves
-tests/               2,508 passing, and two independent simulators
+tests/               2,533 passing, and two independent simulators
                      written to disagree with the engine
 docs/                features, sources, architecture, design notes
   diagrams/          the generated money-flow SVGs
@@ -430,7 +445,7 @@ cannot exercise the screens that display one.
 
 | Gate | Status |
 |---|---|
-| Tests | **2,508 passing**, 4 intentionally skipped |
+| Tests | **2,533 passing**, 4 intentionally skipped |
 | Statement coverage | **93%** |
 | Ruff findings | **0** |
 | Mypy errors | **0** |

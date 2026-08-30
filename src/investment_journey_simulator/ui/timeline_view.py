@@ -31,10 +31,12 @@ from investment_journey_simulator.timeline import (
     EVENT_EXPLANATION_DICT,
     EVENT_INCOME_STR,
     EVENT_LUMPSUM_STR,
+    EVENT_LUMPSUM_WITHDRAW_STR,
     EVENT_PAUSE_STR,
     EVENT_RESUME_STR,
     EVENT_RETIRE_STR,
     EVENT_STEPUP_STR,
+    EVENT_WITHDRAW_ALL_STR,
     EVENT_WITHDRAW_STR,
     TimelineEvent,
     TimelinePlan,
@@ -52,7 +54,9 @@ EVENT_MARKER_COLOUR_DICT: dict[str, str] = {
     EVENT_PAUSE_STR: PAUSE_COLOUR_STR,
     EVENT_RESUME_STR: ACCENT_COLOUR_STR,
     EVENT_LUMPSUM_STR: "#D97706",
+    EVENT_LUMPSUM_WITHDRAW_STR: LOSS_COLOUR_STR,
     EVENT_WITHDRAW_STR: LOSS_COLOUR_STR,
+    EVENT_WITHDRAW_ALL_STR: LOSS_COLOUR_STR,
     EVENT_RETIRE_STR: "#7C3AED",
     EVENT_INCOME_STR: TAX_COLOUR_STR,
 }
@@ -61,7 +65,12 @@ EVENT_MARKER_SYMBOL_DICT: dict[str, str] = {
     EVENT_PAUSE_STR: "square",
     EVENT_RESUME_STR: "triangle-right",
     EVENT_LUMPSUM_STR: "diamond",
+    # A lump out is a lump in, pointing the other way.
+    EVENT_LUMPSUM_WITHDRAW_STR: "diamond-open",
     EVENT_WITHDRAW_STR: "triangle-down",
+    # The plan stops here, so the marker is a full stop rather
+    # than another arrow along the line.
+    EVENT_WITHDRAW_ALL_STR: "x",
     EVENT_RETIRE_STR: "star",
     EVENT_INCOME_STR: "hexagon",
 }

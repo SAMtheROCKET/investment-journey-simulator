@@ -20,6 +20,7 @@ from investment_journey_simulator.models import (
     FundConfiguration,
     InstalmentOverride,
     OneOffContribution,
+    OneOffWithdrawal,
     PauseRange,
     PauseSettings,
     RebalanceSettings,
@@ -326,6 +327,50 @@ def build_one_off_list(
     return one_off_list
 
 
+def build_one_off_withdrawal_list(
+    rng: random.Random,
+    horizon_months_int: int,
+    fund_list: list,
+) -> list:
+    """Lump sums taken out at random months.
+
+    Deliberately allowed to exceed the corpus sometimes, because a
+    withdrawal larger than the money available is a real thing a
+    reader can ask for and the engine has to cap it rather than go
+    negative.
+    """
+    withdrawal_list = []
+    for _index_int in range(rng.choice([0, 0, 0, 1, 2])):
+        withdrawal_list.append(
+            OneOffWithdrawal(
+                rng.randrange(0, max(1, horizon_months_int)),
+                rng.choice([50000.0, 250000.0, 5000000.0]),
+                (
+                    rng.choice(fund_list).name_str
+                    if rng.random() < 0.3
+                    else ""
+                ),
+            )
+        )
+    return withdrawal_list
+
+
+def build_liquidation_month_int(
+    rng: random.Random,
+    horizon_months_int: int,
+) -> int | None:
+    """Sometimes the plan sells the lot part way through.
+
+    Placed anywhere in the run rather than near the end, because
+    the interesting case is a liquidation with years left after
+    it: the instalment keeps running unless something stops it,
+    and both simulators have to agree about what happens next.
+    """
+    if rng.random() < 0.85:
+        return None
+    return rng.randrange(0, max(1, horizon_months_int))
+
+
 def build_scenario_tuple(
     seed_int: int,
     is_taxed_bool: bool = False,
@@ -365,6 +410,12 @@ def build_scenario_tuple(
         instalment_override_list=build_override_list(
             rng, horizon_months_int, fund_list
         ),
+        one_off_withdrawals_list=build_one_off_withdrawal_list(
+            rng, horizon_months_int, fund_list
+        ),
+        liquidation_month_index_int=build_liquidation_month_int(
+            rng, horizon_months_int
+        ),
     )
     return fund_list, settings
 
@@ -380,6 +431,8 @@ def describe_scenario_str(fund_list: list, settings) -> str:
         f"rebalance {settings.rebalance}",
         f"overrides {settings.instalment_override_list}",
         f"one-offs {settings.one_off_contributions_list}",
+        f"lump withdrawals {settings.one_off_withdrawals_list}",
+        f"liquidation month {settings.liquidation_month_index_int}",
     ]
     for fund in fund_list:
         line_list.append(

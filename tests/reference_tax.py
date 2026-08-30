@@ -587,11 +587,13 @@ class ReferenceTaxRun:
                 month_index_int, month_date, True
             )
         self._withdraw(month_index_int, month_date)
+        self._withdraw_one_offs(month_index_int, month_date)
         self._rebalance_if_due(month_index_int, month_date)
         if not self._settings.sip_at_month_start_bool:
             self._pay_instalments(
                 month_index_int, month_date, False
             )
+        self._liquidate_if_due(month_index_int, month_date)
 
     def _seed_lump_sums(self, month_index_int: int) -> None:
         """Opening balances, in month zero only."""
@@ -719,6 +721,77 @@ class ReferenceTaxRun:
                 0.0,
                 outcome.proceeds_float - outcome.charges_float,
             )
+
+    def _sell_across(
+        self,
+        book_list: list,
+        amount_float: float,
+        month_index_int: int,
+        month_date: date,
+    ) -> None:
+        """Raise one amount pro rata from a set of lot books."""
+        value_dict = {
+            book.fund.name_str: book.value_float(month_index_int)
+            for book in book_list
+        }
+        total_float = sum(value_dict.values())
+        if total_float <= MONEY_TOLERANCE_FLOAT or amount_float <= 0:
+            return
+        wanted_float = min(amount_float, total_float)
+        for book in book_list:
+            share_float = (
+                value_dict[book.fund.name_str] / total_float
+            )
+            outcome = book.sell(
+                wanted_float * share_float,
+                month_index_int,
+                month_date,
+            )
+            book.withdrawn_float += max(
+                0.0,
+                outcome.proceeds_float - outcome.charges_float,
+            )
+
+    def _withdraw_one_offs(
+        self, month_index_int: int, month_date: date
+    ) -> None:
+        """Every lump sum dated out of this month."""
+        for withdrawal in self._settings.one_off_withdrawals_list:
+            if int(withdrawal.month_index_int) != int(
+                month_index_int
+            ):
+                continue
+            amount_float = float(withdrawal.amount_float)
+            if amount_float <= 0.0:
+                continue
+            book_list = [
+                book
+                for book in self._book_list
+                if not withdrawal.fund_name_str
+                or book.fund.name_str == withdrawal.fund_name_str
+            ]
+            self._sell_across(
+                book_list, amount_float, month_index_int, month_date
+            )
+
+    def _liquidate_if_due(
+        self, month_index_int: int, month_date: date
+    ) -> None:
+        """Sell every lot, if this is the month for it."""
+        liquidation_month_int = (
+            self._settings.liquidation_month_index_int
+        )
+        if liquidation_month_int is None:
+            return
+        if int(month_index_int) != int(liquidation_month_int):
+            return
+        total_float = sum(
+            book.value_float(month_index_int)
+            for book in self._book_list
+        )
+        self._sell_across(
+            self._book_list, total_float, month_index_int, month_date
+        )
 
     def _is_calendar_due_bool(self, month_index_int: int) -> bool:
         """The rebalancing interval has elapsed."""

@@ -34,6 +34,24 @@ it lands rather than against the history behind it:
 
     NOT WITHDRAWING --start--> WITHDRAWING --stop--> NOT WITHDRAWING
 
+Two rules that are not state machines
+-------------------------------------
+Two of the newer events are judged differently, and deliberately.
+
+*Taking money out needs money to be there.* Whether the plan is
+investing, paused or retired at that moment is beside the point -
+what matters is whether anything was ever put in. Money does not
+un-exist, so this genuinely is the existence question the module
+warns against elsewhere, and an existence check is the honest test
+for it. A plan whose only funding was a lump sum in year one may
+withdraw in year eight, and a state machine keyed on the SIP would
+wrongly refuse that.
+
+*Closing the plan closes it.* A full exit is terminal, so nothing
+after it can take effect - not a step-up, not a note, not another
+exit. That rule is universal rather than per-event, so it is
+applied by the walker rather than declared in the table below.
+
 Two rules shape the reporting
 -----------------------------
 *Warn, do not forbid.* A reader may be building a plan out of order,
@@ -55,12 +73,15 @@ from datetime import date
 
 from investment_journey_simulator.timeline import (
     EVENT_CHANGE_SIP_STR,
+    EVENT_LUMPSUM_STR,
+    EVENT_LUMPSUM_WITHDRAW_STR,
     EVENT_PAUSE_STR,
     EVENT_RESUME_STR,
     EVENT_RETIRE_STR,
     EVENT_START_SIP_STR,
     EVENT_STEPUP_STR,
     EVENT_STOP_WITHDRAW_STR,
+    EVENT_WITHDRAW_ALL_STR,
     EVENT_WITHDRAW_STR,
     TimelineEvent,
 )
@@ -77,6 +98,24 @@ WITHDRAWING_STR: str = "withdrawing"
 CONTRIBUTION_MACHINE_STR: str = "contribution"
 WITHDRAWAL_MACHINE_STR: str = "withdrawal"
 
+# Anything that can put money into the plan. A withdrawal needs one
+# of these behind it, whatever the machines are doing.
+FUNDING_EVENT_TUPLE: tuple = (
+    EVENT_START_SIP_STR,
+    EVENT_LUMPSUM_STR,
+)
+
+# What the plan is once it has been closed. Not a machine state:
+# there is no transition out of it.
+CLOSED_STR: str = "closed"
+
+# What may follow a close. Starting to invest again opens a new
+# phase: the corpus is empty, so the plan builds from nothing, but
+# nothing forbids building. A reader who retires, spends the lot
+# and then goes back to work is describing an ordinary life, and a
+# timeline that refused to express it would be the poorer tool.
+REOPENING_EVENT_TUPLE: tuple = (EVENT_START_SIP_STR,)
+
 
 @dataclass(frozen=True)
 class PlanState:
@@ -84,6 +123,8 @@ class PlanState:
 
     contribution_str: str = NOT_INVESTING_STR
     withdrawal_str: str = NOT_WITHDRAWING_STR
+    is_funded_bool: bool = False
+    is_closed_bool: bool = False
 
 
 @dataclass(frozen=True)
@@ -248,6 +289,88 @@ def _build_sentence_str(
     )
 
 
+def _find_plan_level_finding(
+    event: TimelineEvent,
+    state: PlanState,
+) -> OrderFinding | None:
+    """The two rules that no machine expresses.
+
+    Brief:
+        Nothing may follow a close, and nothing may be taken out
+        of a plan that was never funded.
+
+    Arguments:
+        event (TimelineEvent): Event being placed.
+        state (PlanState): The plan at that moment.
+
+    Returns:
+        Optional[OrderFinding]: A finding, or None when the event
+            is allowed.
+
+    Warning:
+        Checked before the machines, because an event after a
+        close should be reported as landing after the close rather
+        than as a second complaint about some other state.
+    """
+    if state.is_closed_bool and (
+        event.event_type_str not in REOPENING_EVENT_TUPLE
+    ):
+        return _build_closed_finding(event)
+    takes_money_out_bool = event.event_type_str in (
+        EVENT_LUMPSUM_WITHDRAW_STR,
+        EVENT_WITHDRAW_ALL_STR,
+    )
+    if takes_money_out_bool and not state.is_funded_bool:
+        return _build_empty_finding(event)
+    return None
+
+
+def _build_closed_finding(event: TimelineEvent) -> OrderFinding:
+    """Say that the plan had already ended, and how to reopen it."""
+    return OrderFinding(
+        event.event_type_str,
+        event.event_date,
+        CLOSED_STR,
+        f"**{event.event_type_str}** in "
+        f"{event.event_date:%B %Y} cannot happen: the plan was "
+        "closed in an earlier month and everything was taken out "
+        f"then, so there is nothing for this to act on. "
+        f"**{EVENT_START_SIP_STR}** would open it again; move this "
+        "event after that, or before the close.",
+    )
+
+
+def _build_empty_finding(event: TimelineEvent) -> OrderFinding:
+    """Say that there is nothing in the plan yet to take out."""
+    return OrderFinding(
+        event.event_type_str,
+        event.event_date,
+        "empty",
+        f"**{event.event_type_str}** in "
+        f"{event.event_date:%B %Y} has nothing to take: no money "
+        "has gone in by then. Add an instalment or a one-off "
+        "investment in an earlier month.",
+    )
+
+
+def _record_plan_level_state(
+    event: TimelineEvent,
+    state: PlanState,
+) -> PlanState:
+    """Note that the plan has been funded, or closed."""
+    if event.event_type_str in FUNDING_EVENT_TUPLE:
+        state = replace(state, is_funded_bool=True)
+    if event.event_type_str in REOPENING_EVENT_TUPLE:
+        state = replace(state, is_closed_bool=False)
+    if event.event_type_str == EVENT_WITHDRAW_ALL_STR:
+        # Both machines go back to where they started. A closure
+        # sells everything and stops both flows, so the plan is
+        # not investing, not withdrawing and holds nothing - which
+        # is exactly the state it began in.
+        state = PlanState(is_funded_bool=False, is_closed_bool=True)
+    return state
+
+
 def find_order_finding_list(
     event_list: list[TimelineEvent],
 ) -> list[OrderFinding]:
@@ -273,6 +396,11 @@ def find_order_finding_list(
     state = PlanState()
     finding_list: list[OrderFinding] = []
     for event in sorted(event_list, key=_sort_key_tuple):
+        finding = _find_plan_level_finding(event, state)
+        if finding is not None:
+            finding_list.append(finding)
+            continue
+        state = _record_plan_level_state(event, state)
         transition = TRANSITION_DICT.get(event.event_type_str)
         if transition is None:
             continue

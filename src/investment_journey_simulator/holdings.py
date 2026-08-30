@@ -491,6 +491,56 @@ class FundHoldings:
             self._charges_this_sale_float,
         )
 
+    def sell_everything(
+        self,
+        month_index_int: int,
+        sale_date: date,
+    ) -> SaleOutcome:
+        """Sell every lot in full and leave the book empty.
+
+        Brief:
+            Closing a plan is not the same operation as raising an
+            amount that happens to equal the balance, and asking
+            for the balance leaves float dust behind: the running
+            total is compared against each lot in turn, and the
+            last comparison can fall a fraction short. Nine
+            nano-rupees is not money, but "this plan holds exactly
+            nothing" is a claim about kind rather than size, and
+            it should be true rather than nearly true.
+
+        Arguments:
+            month_index_int (int): Month index of the sale.
+            sale_date (date): Calendar date of the sale.
+
+        Returns:
+            SaleOutcome: Proceeds, tax and charges of the exit.
+
+        Warning:
+            The book is emptied unconditionally. Nothing survives,
+            so the holding values at exactly zero from here on.
+        """
+        self._charges_this_sale_float = 0.0
+        total_proceeds_float = 0.0
+        total_tax_float = 0.0
+        for lot in self._lots_list:
+            lot_value_float = self._calculate_lot_value_float(
+                lot, month_index_int
+            )
+            if lot_value_float <= 0.0:
+                continue
+            taken_float, tax_float, _leftover = self._sell_one_lot(
+                lot, lot_value_float, month_index_int, sale_date
+            )
+            total_proceeds_float += taken_float
+            total_tax_float += tax_float
+        self._lots_list = []
+        self.tax_paid_amount_float += total_tax_float
+        return SaleOutcome(
+            total_proceeds_float,
+            total_tax_float,
+            self._charges_this_sale_float,
+        )
+
     def register_withdrawal(self, amount_float: float) -> None:
         """Book sold proceeds as money leaving the portfolio.
 
