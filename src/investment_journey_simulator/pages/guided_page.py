@@ -47,6 +47,7 @@ from investment_journey_simulator.timeline_app import (
     render_event_composer,
     render_event_list,
     render_inflation_control,
+    render_instalment_control,
     render_rail_panel,
     render_regime_control,
     render_result_view,
@@ -161,7 +162,7 @@ def render_sidebar_controls() -> tuple:
     )
 
 
-def render_plan_view(plan: TimelinePlan) -> None:
+def render_plan_view(plan: TimelinePlan, currency) -> None:
     """Draw the rail and the tools for adding to it.
 
     Brief:
@@ -171,6 +172,7 @@ def render_plan_view(plan: TimelinePlan) -> None:
 
     Arguments:
         plan (TimelinePlan): Plan being edited.
+        currency (Currency): Currency the amounts are shown in.
 
     Returns:
         None: The rail and its tools are rendered.
@@ -181,6 +183,7 @@ def render_plan_view(plan: TimelinePlan) -> None:
         composer reads it.
     """
     render_rail_panel(plan)
+    render_instalment_control(currency)
     render_event_composer(plan.start_date)
     render_event_list(plan.event_list)
 
@@ -325,7 +328,7 @@ def render() -> None:
         list(updated.plan.event_list),
     )
     if render_view_toggle() == VIEW_PLAN_STR:
-        render_plan_view(plan)
+        render_plan_view(plan, currency)
         render_timeline_reading(plan)
         return
     result, settings = run_plan(

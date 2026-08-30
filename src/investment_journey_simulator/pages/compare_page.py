@@ -47,6 +47,8 @@ from investment_journey_simulator.scenario_set import (
     ScenarioSet,
     add_journey,
     find_basis_difference_list,
+    find_duplicate_name_list,
+    find_identical_journey_str,
     find_spread_float,
     remove_journey,
     run_scenario_set,
@@ -60,6 +62,11 @@ from investment_journey_simulator.ui.theme import (
 )
 
 TITLE_STR: str = "Compare Journeys"
+# Streamlit reads a blank line as a paragraph break, and a literal
+# newline pair is easier to get wrong inside an f-string than to
+# name once.
+BREAK_STR: str = chr(10) * 2
+
 LEAD_STR: str = (
     "Same income, same return, same retirement age - different "
     "behaviour. This is what those differences are worth."
@@ -108,12 +115,53 @@ def render_capture_controls(scenario: PlanScenario) -> None:
             width="stretch",
         )
     if is_saved_bool:
-        write_scenario_set(
-            add_journey(
-                scenario_set, build_named_copy(scenario, name_str)
-            )
+        _save_journey(scenario_set, scenario, name_str)
+
+
+def _save_journey(
+    scenario_set: ScenarioSet,
+    scenario: PlanScenario,
+    name_str: str,
+) -> None:
+    """Store one journey, unless it merely repeats another.
+
+    Brief:
+        A plan saved twice under two names is not a comparison. It
+        draws two curves lying exactly on top of each other, a
+        spread of zero and an attribution with nothing in it -
+        which reads as an answer rather than as the mistake it is.
+
+    Arguments:
+        scenario_set (ScenarioSet): Journeys already held.
+        scenario (PlanScenario): The plan as it stands.
+        name_str (str): Name the reader typed.
+
+    Returns:
+        None: The set is written, or the reader is told why not.
+
+    Warning:
+        Refuses rather than warns-and-saves. A comparison holding
+        a duplicate is not a thing anybody wants, and letting it
+        through would put the burden of noticing on the reader.
+    """
+    candidate = build_named_copy(scenario, name_str)
+    twin_name_str = find_identical_journey_str(
+        scenario_set, candidate
+    )
+    if twin_name_str:
+        st.warning(
+            f"**This is the same plan as \"{twin_name_str}\".** "
+            "Saving it again would compare a plan with itself: two "
+            "identical curves and a difference of zero."
+            + BREAK_STR
+            + "Change something first - the monthly amount, a "
+            "pause, a step-up, money taken out - then save it. "
+            "Typing a figure into **Add an event** does not change "
+            "the plan until you press *Add to timeline*."
         )
-        st.rerun()
+        return
+    write_scenario_set(add_journey(scenario_set, candidate))
+    st.rerun()
 
 
 def render_journey_list() -> None:
@@ -140,6 +188,38 @@ def render_journey_list() -> None:
     )
 
 
+def render_duplicate_warning(scenario_set: ScenarioSet) -> None:
+    """Say when two of the journeys held are the same plan.
+
+    Brief:
+        Saving a duplicate is refused now, but a set built before
+        that, or restored from a file, can still hold one. Two
+        curves lying exactly on top of each other look like a
+        drawing error rather than what they are, so the page says
+        which journeys are involved.
+
+    Arguments:
+        scenario_set (ScenarioSet): Journeys being compared.
+
+    Returns:
+        None: A warning is rendered when one is warranted.
+
+    Warning:
+        Names every journey in a duplicated group. Which of them
+        is "the copy" is not a question the set can answer.
+    """
+    duplicate_list = find_duplicate_name_list(scenario_set)
+    if not duplicate_list:
+        return
+    name_str = ", ".join(f"**{held}**" for held in duplicate_list)
+    st.warning(
+        f"{name_str} are the same plan under different names, so "
+        "the difference between them is zero and the curves lie on "
+        "top of each other. Remove one, or change something about "
+        "it and save it again."
+    )
+
+
 def render_basis_warning(scenario_set: ScenarioSet) -> None:
     """Say so when the comparison is not purely about behaviour.
 
@@ -158,6 +238,7 @@ def render_basis_warning(scenario_set: ScenarioSet) -> None:
         Warns rather than refuses. Comparing two returns on purpose
         is reasonable; being told it was behaviour is not.
     """
+    render_duplicate_warning(scenario_set)
     difference_list = find_basis_difference_list(scenario_set)
     if not difference_list:
         st.success(

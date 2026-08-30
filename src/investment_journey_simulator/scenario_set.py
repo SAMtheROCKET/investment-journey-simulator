@@ -21,6 +21,11 @@ from investment_journey_simulator.plan_scenario import (
     PlanScenario,
     compile_scenario,
 )
+from investment_journey_simulator.scenario_io import (
+    NAME_KEY_STR,
+    PRESENTATION_KEY_STR,
+    encode_scenario_dict,
+)
 
 MAXIMUM_JOURNEY_COUNT_INT: int = 6
 
@@ -233,6 +238,107 @@ def find_spread_float(
         outcome.final_value_float for outcome in outcome_list
     ]
     return max(value_list) - min(value_list)
+
+
+def build_plan_fingerprint_str(scenario: PlanScenario) -> str:
+    """What a journey computes, with its label stripped off.
+
+    Brief:
+        Two journeys are the same comparison if they would run the
+        same simulation, whatever they are called and however they
+        are displayed. So the name and the presentation come out
+        before the fingerprint is taken; everything that reaches
+        the engine stays in.
+
+    Arguments:
+        scenario (PlanScenario): Journey to fingerprint.
+
+    Returns:
+        str: A stable string, equal for equal plans.
+
+    Warning:
+        Equality of this string means the two plans produce the
+        same numbers. It does not mean they were built the same
+        way, and it is not a hash - there is no attacker here, and
+        a collision would need the encoder to drop a field.
+    """
+    encoded_dict = dict(encode_scenario_dict(scenario))
+    encoded_dict.pop(NAME_KEY_STR, None)
+    encoded_dict.pop(PRESENTATION_KEY_STR, None)
+    return repr(encoded_dict)
+
+
+def find_identical_journey_str(
+    scenario_set: ScenarioSet,
+    scenario: PlanScenario,
+) -> str:
+    """The held journey this one would merely duplicate.
+
+    Brief:
+        Saving the same plan under two names produces a comparison
+        of a plan with itself: two curves lying exactly on top of
+        each other, a spread of zero, and an attribution with
+        nothing to attribute. It looks like an answer and is not
+        one, which is worse than an error.
+
+    Arguments:
+        scenario_set (ScenarioSet): Journeys already held.
+        scenario (PlanScenario): Journey about to be saved.
+
+    Returns:
+        str: Name of the journey it duplicates, or an empty string
+            when it genuinely differs from all of them.
+
+    Warning:
+        A journey saved under a name already held is not a
+        duplicate but a replacement, which is what changing your
+        mind about one looks like, so it is allowed through.
+    """
+    fingerprint_str = build_plan_fingerprint_str(scenario)
+    for held in scenario_set.scenario_list:
+        if held.name_str == scenario.name_str:
+            continue
+        if build_plan_fingerprint_str(held) == fingerprint_str:
+            return held.name_str
+    return ""
+
+
+def find_duplicate_name_list(
+    scenario_set: ScenarioSet,
+) -> list[str]:
+    """Every name in a set that shares a plan with another.
+
+    Brief:
+        For sets built before duplicates were refused, or loaded
+        from a file, so the comparison can say why two curves are
+        sitting on top of each other.
+
+    Arguments:
+        scenario_set (ScenarioSet): Journeys held.
+
+    Returns:
+        List[str]: Names involved in a duplication, in the order
+            they are held. Empty when every journey differs.
+
+    Warning:
+        Names every journey in a duplicated group, not only the
+        later ones, because which of them is "the copy" is not a
+        question the set can answer.
+    """
+    name_list_by_fingerprint: dict = {}
+    for held in scenario_set.scenario_list:
+        name_list_by_fingerprint.setdefault(
+            build_plan_fingerprint_str(held), []
+        ).append(held.name_str)
+    duplicate_list: list[str] = []
+    for name_list in name_list_by_fingerprint.values():
+        if len(name_list) > 1:
+            duplicate_list.extend(name_list)
+    return [
+        held.name_str
+        for held in scenario_set.scenario_list
+        if held.name_str in duplicate_list
+    ]
 
 
 def add_journey(

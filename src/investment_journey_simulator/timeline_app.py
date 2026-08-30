@@ -152,7 +152,9 @@ REFERENCE_AMOUNT_FLOAT: float = 100000.0
 # Every amount field says what unit it is in, because a rupee
 # figure means nothing until you know whether it repeats.
 AMOUNT_UNIT_DICT: dict[str, str] = {
-    EVENT_START_SIP_STR: "How much every month ({symbol} a month)",
+    EVENT_START_SIP_STR: (
+        "New event: how much every month ({symbol} a month)"
+    ),
     EVENT_CHANGE_SIP_STR: "New monthly amount ({symbol} a month)",
     EVENT_LUMPSUM_STR: "How much, once ({symbol}, one time)",
     EVENT_WITHDRAW_STR: "How much to draw ({symbol} a month)",
@@ -162,6 +164,11 @@ AMOUNT_UNIT_DICT: dict[str, str] = {
     EVENT_INCOME_STR: "Total annual income ({symbol} a year)",
 }
 DEFAULT_AMOUNT_UNIT_STR: str = "Amount ({symbol})"
+COMPOSER_HINT_STR: str = (
+    "Nothing here changes the plan until you press **Add to "
+    "timeline**. To correct what the plan already invests, use "
+    "*Invest each month* above."
+)
 PERCENT_UNIT_DICT: dict[str, str] = {
     EVENT_STEPUP_STR: "Increase the instalment by (% a year)",
     EVENT_INFLATION_STR: "Prices rise by (% a year)",
@@ -1162,24 +1169,126 @@ def render_gantt_panel(plan: TimelinePlan) -> None:
     )
 
 
+def find_starting_instalment_float(
+    event_list: list[TimelineEvent],
+) -> float:
+    """What the plan invests each month when it opens.
+
+    Brief:
+        The first "start investing" event sets it. Later changes
+        and step-ups move it, but this is the figure a reader
+        means by "my SIP".
+
+    Arguments:
+        event_list (List[TimelineEvent]): The timeline.
+
+    Returns:
+        float: The opening instalment, or zero when the plan does
+            not start investing at all.
+
+    Warning:
+        Reads the earliest start, not the largest. A plan closed
+        and started again has two, and the first is the one this
+        control edits.
+    """
+    start_list = sorted(
+        (
+            event
+            for event in event_list
+            if event.event_type_str == EVENT_START_SIP_STR
+        ),
+        key=lambda event: event.event_date,
+    )
+    return float(start_list[0].amount_float) if start_list else 0.0
+
+
+def render_instalment_control(currency: Currency) -> None:
+    """Edit what the plan invests each month, in one place.
+
+    Brief:
+        Changing the monthly amount is the commonest edit there
+        is, and until this existed it needed a second event added
+        by hand. Worse, the amount field inside **Add an event**
+        looks exactly like the control a reader expects, so typing
+        in it and expecting the plan to change was the obvious
+        mistake - and it changed nothing, silently, which is how
+        two identical journeys came to be saved under two names.
+
+    Arguments:
+        currency (Currency): Currency to label the field in.
+
+    Returns:
+        None: The rail's events are rewritten when it changes.
+
+    Warning:
+        Edits the opening instalment in place rather than adding a
+        "change the monthly amount" event, because a reader
+        correcting a figure they typed did not mean to record a
+        decision they took later.
+    """
+    event_list = read_event_list()
+    current_float = find_starting_instalment_float(event_list)
+    if not current_float:
+        return
+    typed_float = float(
+        st.number_input(
+            f"Invest each month ({currency.symbol_str} a month)",
+            min_value=0.0,
+            value=current_float,
+            step=1000.0,
+            key="rail_starting_instalment",
+            help=(
+                "Changes the amount the plan opens with. To change "
+                "it partway through instead, add a "
+                f"**{EVENT_CHANGE_SIP_STR}** event."
+            ),
+        )
+    )
+    if typed_float == current_float:
+        return
+    st.session_state[EVENT_STATE_KEY_STR] = (
+        _build_reinstalled_event_list(event_list, typed_float)
+    )
+    st.rerun()
+
+
+def _build_reinstalled_event_list(
+    event_list: list[TimelineEvent],
+    amount_float: float,
+) -> list[TimelineEvent]:
+    """Rewrite the opening instalment, leaving the rest alone."""
+    opening_date = min(
+        event.event_date
+        for event in event_list
+        if event.event_type_str == EVENT_START_SIP_STR
+    )
+    return [
+        replace(event, amount_float=amount_float)
+        if (
+            event.event_type_str == EVENT_START_SIP_STR
+            and event.event_date == opening_date
+        )
+        else event
+        for event in event_list
+    ]
+
+
 def render_event_composer(plan_start_date: date) -> None:
     """Render the control that adds an event to the timeline.
 
-    Brief:
-        The explanation of the selected event type is shown before
-        the reader commits to it, which is the whole point of the
-        hover-to-learn idea carried into the editor.
+    Nothing here changes the plan until the button is pressed,
+    which the caption now says out loud: the amount field looked
+    enough like an editor that readers typed into it, saw nothing
+    happen, and saved the same plan twice under two names.
 
     Arguments:
         plan_start_date (date): Default date for a new event.
 
     Returns:
         None: Widgets are written to the page.
-
-    Warning:
-        Mutates session state when the add button is pressed.
     """
-    with st.expander("Add an event", expanded=True):
+    with st.expander("Add an event to the timeline", expanded=True):
+        st.caption(COMPOSER_HINT_STR)
         event_type_str = str(
             st.selectbox(
                 "What happens?",

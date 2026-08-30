@@ -11,6 +11,40 @@ that file's shape is, and only changes when an old file would
 otherwise stop loading. The **Python API** is not versioned at all,
 because nothing outside this repository imports it.
 
+## 4.3.1 - 31 August 2026
+
+A plan saved twice under two names, and the reason it happened.
+
+### Fixed
+
+- **The Compare page would save the same plan under a second name
+  and draw it twice.** Two identical curves, a spread of zero and
+  an attribution with nothing in it reads as an answer rather than
+  as the mistake it is, so saving a journey that duplicates one
+  already held is now refused, naming the journey it matches and
+  saying what to change. A set that already holds duplicates -
+  built before this, or restored from a file - says so where it
+  draws them.
+- **The Guided page had no way to change what a plan invests each
+  month.** The field labelled "How much every month" belongs to
+  the *add an event* composer, so typing into it changed nothing
+  until the event was placed. There is now an **Invest each
+  month** control beside the rail that edits the plan directly,
+  and the composer says out loud that nothing there takes effect
+  until *Add to timeline* is pressed.
+
+Neither the engine nor the comparison was at fault. Each screen
+was correct on its own; what was missing was any way to notice
+that an edit had not landed, and any objection to comparing a plan
+with itself.
+
+### Added
+
+- `tests/test_journey_round_trip.py`. Every other page test drives
+  one screen, which is exactly why this survived: the failure only
+  exists in the gap between two. It saves a journey, edits on the
+  timeline, saves again, and asserts the two differ.
+
 ## 4.3.0 - 31 August 2026
 
 Two ways of taking money out that the timeline could not express.
