@@ -12,6 +12,12 @@ from __future__ import annotations
 
 import streamlit as st
 
+from investment_journey_simulator.constants import (
+    MAXIMUM_HORIZON_YEARS_INT,
+    MAXIMUM_RETURN_PERCENT_FLOAT,
+    MINIMUM_HORIZON_YEARS_INT,
+    MINIMUM_RETURN_PERCENT_FLOAT,
+)
 from investment_journey_simulator.currency import (
     describe_money_str,
     format_money_str,
@@ -61,8 +67,10 @@ LEAD_STR: str = (
     "listed below the result, so you can see what was taken for "
     "granted."
 )
-MINIMUM_HORIZON_INT: int = 1
-MAXIMUM_HORIZON_INT: int = 50
+# Both come from constants.py, so this screen can never
+# disagree with the solver that writes to it again.
+MINIMUM_HORIZON_INT: int = MINIMUM_HORIZON_YEARS_INT
+MAXIMUM_HORIZON_INT: int = MAXIMUM_HORIZON_YEARS_INT
 
 HELP_HOW_LONG_THE_MONEY_STR: str = (
     "How long the money stays invested. Longer horizons compound "
@@ -76,6 +84,55 @@ HELP_CHANGES_THE_SYMBOL_AND_STR: str = (
     "Changes the symbol and the grouping only. No amount is "
     "converted."
 )
+
+
+def clamp_horizon_int(horizon_years_int: int) -> int:
+    """Bring a stored horizon inside what this control accepts.
+
+    Brief:
+        A widget handed a value outside its own range does not
+        clip it - it raises, and the whole page dies with it. That
+        is a poor way to react to a number the program itself
+        wrote, and a worse one to react to a file somebody saved
+        under an older limit.
+
+    Arguments:
+        horizon_years_int (int): Horizon the plan carries.
+
+    Returns:
+        int: The same horizon, or the nearest allowed value.
+
+    Warning:
+        Clamps quietly. The plan itself is left alone until the
+        reader touches the control, so a scenario is never edited
+        by being looked at - but the figure shown will differ from
+        the figure stored until they do.
+    """
+    return max(
+        MINIMUM_HORIZON_INT,
+        min(MAXIMUM_HORIZON_INT, int(horizon_years_int)),
+    )
+
+
+def clamp_return_float(return_percent_float: float) -> float:
+    """Bring a stored return inside what this control accepts.
+
+    Brief:
+        The same guard as the horizon, for the same reason. A plan
+        may legitimately assume a fund loses money, and this
+        screen has to be able to show that plan rather than die
+        on it.
+
+    Arguments:
+        return_percent_float (float): Return the plan assumes.
+
+    Returns:
+        float: The same figure, or the nearest allowed one.
+    """
+    return max(
+        MINIMUM_RETURN_PERCENT_FLOAT,
+        min(MAXIMUM_RETURN_PERCENT_FLOAT, float(return_percent_float)),
+    )
 
 
 def render_inputs(scenario: PlanScenario) -> PlanScenario:
@@ -97,35 +154,54 @@ def render_inputs(scenario: PlanScenario) -> PlanScenario:
     """
     first_column, second_column = st.columns(2)
     with first_column:
-        amount_float = st.number_input(
-            "How much will you invest each month?",
-            min_value=0.0,
-            value=read_monthly_contribution_float(scenario),
-            step=1000.0,
-            help="Leave at zero if you are only testing a lump sum.",
-        )
-        horizon_int = st.number_input(
-            "For how many years?",
-            help=HELP_HOW_LONG_THE_MONEY_STR,
-            min_value=MINIMUM_HORIZON_INT,
-            max_value=MAXIMUM_HORIZON_INT,
-            value=scenario.plan.horizon_years_int,
-            step=1,
+        amount_float, horizon_int = _render_how_much_and_how_long(
+            scenario
         )
     with second_column:
-        return_float = st.number_input(
-            "What annual return do you expect, before costs?",
-            min_value=0.0,
-            max_value=40.0,
-            value=read_expected_return_float(scenario),
-            step=0.5,
-            help=HELP_THIS_IS_YOUR_ASSUMPTION_STR,
-        )
+        return_float = _render_expected_return(scenario)
         currency_code_str = _render_currency_picker(scenario)
     updated = set_monthly_contribution(scenario, amount_float)
     updated = set_horizon_years(updated, int(horizon_int))
     updated = set_expected_return(updated, return_float)
     return set_currency_code(updated, currency_code_str)
+
+
+def _render_how_much_and_how_long(
+    scenario: PlanScenario,
+) -> tuple[float, int]:
+    """Ask the two questions that decide most of the answer."""
+    amount_float = st.number_input(
+        "How much will you invest each month?",
+        min_value=0.0,
+        value=read_monthly_contribution_float(scenario),
+        step=1000.0,
+        help="Leave at zero if you are only testing a lump sum.",
+    )
+    horizon_int = st.number_input(
+        "For how many years?",
+        help=HELP_HOW_LONG_THE_MONEY_STR,
+        min_value=MINIMUM_HORIZON_INT,
+        max_value=MAXIMUM_HORIZON_INT,
+        value=clamp_horizon_int(scenario.plan.horizon_years_int),
+        step=1,
+    )
+    return float(amount_float), int(horizon_int)
+
+
+def _render_expected_return(scenario: PlanScenario) -> float:
+    """Ask for the assumption the whole projection rests on."""
+    return float(
+        st.number_input(
+            "What annual return do you expect, before costs?",
+            min_value=MINIMUM_RETURN_PERCENT_FLOAT,
+            max_value=MAXIMUM_RETURN_PERCENT_FLOAT,
+            value=clamp_return_float(
+                read_expected_return_float(scenario)
+            ),
+            step=0.5,
+            help=HELP_THIS_IS_YOUR_ASSUMPTION_STR,
+        )
+    )
 
 
 def _render_currency_picker(scenario: PlanScenario) -> str:

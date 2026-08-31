@@ -201,6 +201,36 @@ thing, see the answer change. That arc is the product.
   not a jump cut.
 - **Light theme.** It is the default, and the one a stranger sees.
 
+### The Advanced Simulator: a still, not a loop
+
+It earns a place in the README, but as a **static screenshot** and
+not a fifth recording.
+
+Its whole message is density - 39 controls, 8 charts, 9 tables, 20
+figures on one screen, which is the visible answer to "is this
+serious?" Density is read rather than watched. A recording of
+someone scrolling a control panel is motion carrying no
+information: the eye never settles long enough to take the wall
+in, and the loop restarts before anything has been counted. A
+still can be stopped on, zoomed into, and studied.
+
+Place it **low**, among the technical sections, near the
+architecture and correctness material. By then a reader has
+stopped asking "is this for me?" and started asking "is this any
+good?" The Advanced screenshot answers the second question well
+and damages the first, which is why it must never appear near the
+top - the same reason it is not the hero.
+
+Shot: full page, light theme, sidebar expanded, 2x and
+downscaled, with a couple of charts visible below the controls so
+the density reads as output rather than as knobs.
+
+That keeps the page at four moving images and two stills. Four is
+the discipline, not an accident: past it, motion stops reading as
+evidence and starts reading as decoration, which is corrosive for
+a project whose whole argument is that its numbers can be
+trusted.
+
 ### One honest warning
 
 Record these *after* the interface has settled. A GIF is the most

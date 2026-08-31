@@ -59,13 +59,35 @@ XIRR_CONVERGENCE_TOLERANCE_FLOAT: float = 1e-7
 XIRR_MAXIMUM_ITERATIONS_INT: int = 200
 
 # ------------------------------------------------------------------
+# How long a plan may run
+# ------------------------------------------------------------------
+# One ceiling, named once. Three used to exist - the goal solver
+# reached sixty years, the guided slider and the advanced sidebar
+# allowed sixty, and Quick Projection stopped at fifty - so a plan
+# that was legal on three screens crashed the fourth. A limit that
+# lives in more than one place is not a limit; it is a disagreement
+# waiting for somebody to walk into it.
+MINIMUM_HORIZON_YEARS_INT: int = 1
+MAXIMUM_HORIZON_YEARS_INT: int = 60
+
+# What a reader may assume a fund returns. Negative is allowed on
+# purpose: "what if this loses money for a decade" is a question
+# worth asking, and a screen that refuses to show the answer it
+# was handed is worse than one that never offered it. Quick
+# Projection used to stop at zero, so a plan built on the timeline
+# with a negative return crashed it.
+MINIMUM_RETURN_PERCENT_FLOAT: float = -20.0
+MAXIMUM_RETURN_PERCENT_FLOAT: float = 40.0
+
+# ------------------------------------------------------------------
 # Goal-seek solver
 # ------------------------------------------------------------------
 GOAL_SEEK_MAXIMUM_ITERATIONS_INT: int = 80
 GOAL_SEEK_TOLERANCE_FLOAT: float = 0.01
 GOAL_SEEK_MAXIMUM_SIP_FLOAT: float = 100_000_000.0
 GOAL_SEEK_MAXIMUM_RETURN_PERCENT_FLOAT: float = 100.0
-GOAL_SEEK_MAXIMUM_YEARS_INT: int = 60
+# The solver may not propose a plan the screens cannot show.
+GOAL_SEEK_MAXIMUM_YEARS_INT: int = MAXIMUM_HORIZON_YEARS_INT
 
 # ------------------------------------------------------------------
 # Risk panel defaults

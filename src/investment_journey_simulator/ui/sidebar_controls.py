@@ -37,6 +37,12 @@ from investment_journey_simulator.constants import (
     WITHDRAWAL_MODE_SCHEDULE_STR,
     WITHDRAWAL_MODES_TUPLE,
 )
+from investment_journey_simulator.constants import (
+    MAXIMUM_HORIZON_YEARS_INT as SHARED_MAXIMUM_HORIZON_YEARS_INT,
+)
+from investment_journey_simulator.constants import (
+    MINIMUM_HORIZON_YEARS_INT as SHARED_MINIMUM_HORIZON_YEARS_INT,
+)
 from investment_journey_simulator.currency import (
     DEFAULT_CURRENCY_CODE_STR,
     Currency,
@@ -57,8 +63,10 @@ from investment_journey_simulator.time_utils import (
     count_months_between_dates_int,
 )
 
-MINIMUM_HORIZON_YEARS_INT: int = 1
-MAXIMUM_HORIZON_YEARS_INT: int = 60
+# Re-exported from constants.py rather than restated, so the
+# ceiling cannot drift apart from the other screens'.
+MINIMUM_HORIZON_YEARS_INT: int = SHARED_MINIMUM_HORIZON_YEARS_INT
+MAXIMUM_HORIZON_YEARS_INT: int = SHARED_MAXIMUM_HORIZON_YEARS_INT
 DEFAULT_HORIZON_YEARS_INT: int = 10
 DEFAULT_INFLATION_PERCENT_FLOAT: float = 6.0
 DEFAULT_GLOBAL_STEPUP_PERCENT_FLOAT: float = 10.0

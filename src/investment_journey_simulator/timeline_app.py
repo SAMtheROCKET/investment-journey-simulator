@@ -21,6 +21,8 @@ from investment_journey_simulator.constants import (
     EXEMPTION_LEVEL_PORTFOLIO_STR,
     EXEMPTION_SCOPE_LONG_TERM_STR,
     EXPENSE_MODEL_ACCRUED_STR,
+    MAXIMUM_RETURN_PERCENT_FLOAT,
+    MINIMUM_RETURN_PERCENT_FLOAT,
     MONTHS_IN_YEAR_INT,
     PRESET_DEBT_STR,
     PRESET_EQUITY_STR,
@@ -2008,7 +2010,11 @@ def _render_return_input_float(column) -> float:
         return_percent_float = render_tunable_float(
             "Assumed return (% a year, before fees)",
             RETURN_STATE_KEY_STR,
-            (-20.0, 40.0, 0.25),
+            (
+                MINIMUM_RETURN_PERCENT_FLOAT,
+                MAXIMUM_RETURN_PERCENT_FLOAT,
+                0.25,
+            ),
             DEFAULT_RETURN_PERCENT_FLOAT,
             help_str=(
                 "Your assumption, not a forecast. Compounded "

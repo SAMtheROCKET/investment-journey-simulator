@@ -11,6 +11,54 @@ that file's shape is, and only changes when an old file would
 otherwise stop loading. The **Python API** is not versioned at all,
 because nothing outside this repository imports it.
 
+## 4.4.2 - 1 September 2026
+
+A goal the solver could reach and one screen refused to show.
+
+### Fixed
+
+- **A plan longer than fifty years killed Quick Projection.** The
+  goal solver searched to sixty years, the guided slider allowed
+  sixty and the advanced sidebar allowed sixty; Quick Projection
+  alone stopped at fifty. So a reader who solved a goal needing
+  fifty-two years, applied it, and opened the first screen in the
+  menu met `StreamlitValueAboveMaxError` instead of an answer. A
+  limit kept in four places is not a limit but a disagreement
+  waiting for somebody to walk into it, so all four now read
+  `MAXIMUM_HORIZON_YEARS_INT` from `constants.py`.
+- **A negative expected return killed it too.** The same sweep
+  found the second half of the same fault: a fund assumed to lose
+  money is legal on the timeline and was legal nowhere else.
+  Expected return is now bounded by one shared pair of constants,
+  which allow it.
+
+### Changed
+
+- Quick Projection clamps a stored value it cannot display rather
+  than raising on it. Agreeing on a limit fixes today's crash and
+  not tomorrow's: a scenario saved before a limit moved can still
+  arrive out of range, and a widget handed an impossible number
+  should show the nearest possible one. The plan itself is left
+  alone until the reader touches the control, so nothing is edited
+  by being looked at.
+
+### Added
+
+- A sweep that renders every screen against every extreme the
+  other screens allow. The fault only existed in the gap between
+  two screens, so checking the one that happened to break would
+  not have found it.
+
+## 4.4.1 - 31 August 2026
+
+Cross-checks, no behaviour change.
+
+### Added
+
+- Independent checks of marginal relief and of grandfathering
+  against their statutes, a sweep for controls that never reach
+  the plan, and tests for events landing on the same month.
+
 ## 4.4.0 - 31 August 2026
 
 Every gap on a timeline was one month too long.

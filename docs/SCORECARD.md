@@ -19,7 +19,7 @@ Assessed 5 August 2026.
 
 | Metric | Value | How it was measured |
 |---|---|---|
-| Tests passing | **2,561 passing**, 4 intentionally skipped | `pytest` |
+| Tests passing | **2,585 passing**, 4 intentionally skipped | `pytest` |
 | Statement coverage | **93%** | `pytest --cov` |
 | Lint findings | **0** | `ruff check src tests tools streamlit_app.py` |
 | Lines over 79 chars | **0** | `tools/check_house_style.py` |
@@ -88,7 +88,7 @@ add for that benchmark"** - not perfection in the abstract.
 
 | Aspect | Rating | Reason |
 |---|---|---|
-| Test coverage & depth | **95%** | 2,561 passing, 93% coverage, provenance tagged G1-G5. Weakest: UI paths - `risk_view` 56%, `fund_inputs` 57%. |
+| Test coverage & depth | **95%** | 2,585 passing, 93% coverage, provenance tagged G1-G5. Weakest: UI paths - `risk_view` 56%, `fund_inputs` 57%. |
 | Correctness evidence | **90%** | Multiple independent cross-checks, including a test that the timeline and classic front ends value the same plan identically. Cannot reach 100% because returns are unverifiable in principle. |
 | Code consistency | **100%** | Zero findings on three separate gates. |
 | Documentation honesty | **98%** | Limits stated prominently, including ones that make the tool look worse. Every parameter and convention is sourced in `docs/SOURCES.md`, and **tests assert the document still matches the code** - a stale citation fails the build. |
