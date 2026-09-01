@@ -12,7 +12,7 @@ description = "Model any asset, any contribution and any life event, then compar
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-authors = [{ name = "Sambit Supriya Dash", email = "sambitd0@gmail.com" }]
+authors = [{ name = "Sambit Supriya Dash", email = "86950017+SAMtheROCKET@users.noreply.github.com" }]
 keywords = [
     "investment",
     "simulation",
@@ -43,8 +43,8 @@ dev = ["pytest>=9.0", "pytest-cov>=7.1", "ruff", "mypy"]
 notebooks = ["ipykernel>=7.1", "ipywidgets>=8.1", "matplotlib>=3.10"]
 
 [project.urls]
-Homepage = "https://github.com/sambitd0/investment-journey-simulator"
-Repository = "https://github.com/sambitd0/investment-journey-simulator"
+Homepage = "https://github.com/SAMtheROCKET/investment-journey-simulator"
+Repository = "https://github.com/SAMtheROCKET/investment-journey-simulator"
 
 [tool.setuptools.dynamic]
 version = { attr = "investment_journey_simulator.__version__" }

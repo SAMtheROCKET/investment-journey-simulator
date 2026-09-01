@@ -7,9 +7,9 @@ type: software
 authors:
   - family-names: Dash
     given-names: Sambit Supriya
-    alias: sambitd0
+    alias: SAMtheROCKET
 repository-code: >-
-  https://github.com/sambitd0/investment-journey-simulator
+  https://github.com/SAMtheROCKET/investment-journey-simulator
 abstract: >-
   A long-term investment planning simulator built around one
   question: not what a monthly contribution becomes, but how much

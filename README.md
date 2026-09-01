@@ -6,7 +6,7 @@ costs.**
 
 *Decisions compound too.*
 
-[![quality](https://github.com/sambitd0/investment-journey-simulator/actions/workflows/quality.yml/badge.svg)](https://github.com/sambitd0/investment-journey-simulator/actions/workflows/quality.yml)
+[![quality](https://github.com/SAMtheROCKET/investment-journey-simulator/actions/workflows/quality.yml/badge.svg)](https://github.com/SAMtheROCKET/investment-journey-simulator/actions/workflows/quality.yml)
 [![tests](https://img.shields.io/badge/tests-2%2C488%20passing-2ea44f)](tests/README.md)
 [![coverage](https://img.shields.io/badge/coverage-93%25-2ea44f)](tests/README.md)
 [![ruff](https://img.shields.io/badge/ruff-clean-2ea44f)](pyproject.toml)
@@ -245,7 +245,7 @@ is.
 ## Running it
 
 ```bash
-git clone https://github.com/sambitd0/investment-journey-simulator
+git clone https://github.com/SAMtheROCKET/investment-journey-simulator
 cd investment-journey-simulator
 pip install -e .
 streamlit run streamlit_app.py
@@ -662,7 +662,7 @@ you believe is wrong.
 
 > **You define the assumptions. It shows you their consequences.**
 
-Built by [Sambit Supriya Dash](https://github.com/sambitd0), mostly
+Built by [Sambit Supriya Dash](https://github.com/SAMtheROCKET), mostly
 because the calculators I could find would tell me what ₹10,000 a
 month becomes, and not one of them would tell me what it cost me to
 stop for two years.

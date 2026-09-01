@@ -23,7 +23,7 @@ comparing it to something written separately.
 ## Setting up
 
 ```bash
-git clone https://github.com/sambitd0/investment-journey-simulator
+git clone https://github.com/SAMtheROCKET/investment-journey-simulator
 cd investment-journey-simulator
 python -m venv env
 env/Scripts/activate          # Windows; use source env/bin/activate elsewhere
