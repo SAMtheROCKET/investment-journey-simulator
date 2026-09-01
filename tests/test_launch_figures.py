@@ -21,6 +21,7 @@ from pathlib import Path
 import pytest
 
 from investment_journey_simulator.attribution import (
+    CAUSE_PAUSE_STR,
     CAUSE_STEPUP_STR,
     attribute_gap,
 )
@@ -97,11 +98,31 @@ def build_journey(
     )
 
 
+def find_document_path(file_name_str: str) -> Path | None:
+    """Where a launch document lives, if it is here at all.
+
+    The recording plan and the social copy are production
+    material rather than user documentation, so they were moved to
+    `_local/launch/`, which is never published. A clean public
+    clone therefore has one of these documents and not the other
+    two, and the checks over them skip rather than fail.
+    """
+    for directory_path in (
+        DOCUMENT_DIRECTORY_PATH,
+        PROJECT_ROOT_PATH / "_local" / "launch",
+    ):
+        file_path = directory_path / file_name_str
+        if file_path.is_file():
+            return file_path
+    return None
+
+
 def read_document_str(file_name_str: str) -> str:
-    """Read one launch document."""
-    return (DOCUMENT_DIRECTORY_PATH / file_name_str).read_text(
-        encoding="utf-8"
-    )
+    """Read one launch document, skipping if it is not published."""
+    file_path = find_document_path(file_name_str)
+    if file_path is None:
+        pytest.skip(f"{file_name_str} is not in this checkout")
+    return file_path.read_text(encoding="utf-8")
 
 
 def flatten_str(text_str: str) -> str:
@@ -286,28 +307,77 @@ def test_the_step_up_gap_is_still_what_we_publish():
 
 
 def test_the_documents_quote_the_step_up_figure():
-    """The headline of the README opener."""
+    """Still the largest gap worked anywhere in the material.
+
+    It moved out of the README opener when the picture changed to
+    the twenty-year pair, so only the worked comparisons quote it
+    now. The engine check above is what keeps it honest; this only
+    asserts the document has not lost it.
+    """
+    assert contains_amount_bool(
+        read_document_str("comparative_journeys.md"), 109653859.0
+    )
+
+
+# --- The pause pair, which is now the opener ----------------------
+
+
+def test_the_pause_pair_gap_is_still_what_we_publish():
+    """The headline of the README opener.
+
+    REFERENCE: G4-SYNTHETIC. Two twenty-year journeys paying in
+    exactly the same ₹45,00,000, differing only in when five years
+    of it were not paid. The whole gap belongs to one cause, so a
+    residual here would mean the split had stopped being exact.
+    """
+    sys.path.insert(0, str(PROJECT_ROOT_PATH / "tools"))
+    from render_journey_comparison import (
+        build_break_event_list,
+    )
+    from render_journey_comparison import (
+        build_journey as build_panel_journey,
+    )
+
+    attribution = attribute_gap(
+        build_panel_journey(
+            "Pause later", build_break_event_list(2037)
+        ),
+        build_panel_journey(
+            "Pause earlier", build_break_event_list(2032)
+        ),
+    )
+    assert [
+        cause.cause_str for cause in attribution.cause_list
+    ] == [CAUSE_PAUSE_STR]
+    assert attribution.gap_float == pytest.approx(
+        -2283200.0, abs=TOLERANCE_FLOAT
+    )
+    assert abs(attribution.residual_float) < TOLERANCE_FLOAT
+
+
+def test_the_documents_quote_the_pause_pair_figure():
+    """README, post and worked comparison must all agree."""
     for text_str in (
         README_PATH.read_text(encoding="utf-8"),
         read_document_str("post.md"),
         read_document_str("comparative_journeys.md"),
     ):
-        assert contains_amount_bool(text_str, 109653859.0)
+        assert contains_amount_bool(text_str, 2283200.0)
 
 
 # --- The documents themselves -------------------------------------
 
 
-def test_the_launch_documents_exist():
-    """They are what the posts are written from."""
-    for file_name_str in (
-        "post.md",
-        "comparative_journeys.md",
-        "demo_script.md",
-    ):
-        assert (
-            DOCUMENT_DIRECTORY_PATH / file_name_str
-        ).is_file()
+def test_the_worked_comparison_is_published():
+    """The one launch document a reader is meant to see.
+
+    It is the page the README sends anybody who wants to rebuild a
+    figure, so unlike the recording plan and the social copy it has
+    to be in the public tree rather than merely somewhere.
+    """
+    assert (
+        DOCUMENT_DIRECTORY_PATH / "comparative_journeys.md"
+    ).is_file()
 
 
 def test_the_post_states_the_assumption_limit():
@@ -345,18 +415,18 @@ def test_the_post_makes_no_boast_it_cannot_back():
 # read most and checked least.
 
 FOUR_PANEL_EXPECTED_DICT: dict = {
-    "A · Never interrupted": 172860910.0,
-    "B · Withdrew early": 165911835.0,
-    "C · Paused two years": 160620654.0,
-    "D · Never stepped up": 63207052.0,
+    "Pause later (5 years)": 17057325.0,
+    "Pause earlier (5 years)": 14774125.0,
+    "Step up 5% + SWP": 26464380.0,
+    "Step up 10% + SWP": 40225852.0,
 }
 
 
 def test_the_readme_figure_still_shows_the_published_numbers():
     """The four panels agree with the four documented journeys.
 
-    REFERENCE: G4-SYNTHETIC. Same engine, same figures as
-    comparative_journeys.md section 2.
+    REFERENCE: G4-SYNTHETIC. Same engine, same figures as the
+    keystroke list in comparative_journeys.md.
     """
     sys.path.insert(0, str(PROJECT_ROOT_PATH / "tools"))
     from render_journey_comparison import (
@@ -379,7 +449,7 @@ def test_the_four_panels_share_one_vertical_scale():
     """The one property the figure exists for.
 
     REFERENCE: G4-SYNTHETIC. Independently scaled panels would draw
-    ₹6.32 crore as tall as ₹17.29 crore and quietly reverse the
+    ₹1.48 crore as tall as ₹4.02 crore and quietly reverse the
     point the picture is making.
     """
     sys.path.insert(0, str(PROJECT_ROOT_PATH / "tools"))

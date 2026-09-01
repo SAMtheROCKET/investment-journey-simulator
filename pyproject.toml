@@ -80,8 +80,10 @@ src = ["src", "tests"]
 # house rules.
 extend-include = []
 # The superseded single-file scripts kept for reference under
-# legacy/ are outside every gate and would not pass one.
-extend-exclude = ["legacy"]
+# _local/ is the working folder: drafts, recordings and the
+# superseded single-file scripts. None of it is published and none
+# of it is held to these gates.
+extend-exclude = ["_local"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "RET"]

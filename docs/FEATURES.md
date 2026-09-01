@@ -8,7 +8,7 @@ All the rupee figures on this page are **real outputs of this code**,
 not illustrations. Unless a section says otherwise the baseline plan
 is: **₹10,000 a month, 12% a year, 15 years, no costs** → **₹47,59,314**.
 
-Status as of 1 September 2026: **2,585 passing · 4 intentionally
+Status as of 1 September 2026: **2,488 passing · 3 intentionally
 skipped · 93% coverage · ruff, mypy and house style all clean.** Every statutory number is sourced in
 [SOURCES.md](SOURCES.md).
 

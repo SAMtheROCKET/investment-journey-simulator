@@ -31,9 +31,9 @@ jobs:
           pip install ruff mypy
 
       # The scope below matches the gates held during development:
-      # the package, the launcher, the tests and the tooling. The
-      # superseded single-file scripts under legacy/ are deliberately
-      # outside it and would not pass.
+      # the package, the launcher, the tests and the tooling. That
+      # is the whole published tree; the drafts this project came
+      # from are kept outside it rather than excluded from it.
       - name: Lint
         run: ruff check src tests tools streamlit_app.py
 

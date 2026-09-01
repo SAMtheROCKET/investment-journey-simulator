@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+title: Investment Journey Simulator
+message: >-
+  If you use this software, or a figure it produced, please cite it
+  using the metadata below.
+type: software
+authors:
+  - family-names: Dash
+    given-names: Sambit Supriya
+    alias: sambitd0
+repository-code: >-
+  https://github.com/sambitd0/investment-journey-simulator
+abstract: >-
+  A long-term investment planning simulator built around one
+  question: not what a monthly contribution becomes, but how much
+  the decisions along the way change that number. Plans are built
+  as timelines of events - start, pause, resume, step up, withdraw,
+  close, reopen - and the difference between any two plans is
+  attributed to its causes by Shapley value, so the parts sum to
+  the whole gap exactly. Lot-level accounting carries Indian
+  capital gains treatment, including the short and long term
+  boundary, the annual exemption, surcharge with marginal relief
+  and grandfathering. The engine is cross-checked against two
+  independently written simulators over tens of thousands of
+  randomly generated plans.
+keywords:
+  - personal finance
+  - investment simulation
+  - financial planning
+  - systematic investment plan
+  - portfolio
+  - capital gains tax
+  - shapley value
+  - attribution
+  - xirr
+  - rebalancing
+  - monte carlo
+  - streamlit
+license: MIT
+version: 4.4.2
+date-released: '2026-09-01'

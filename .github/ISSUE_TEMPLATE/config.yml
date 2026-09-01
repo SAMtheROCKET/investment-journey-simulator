@@ -1,0 +1,12 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/sambitd0/investment-journey-simulator/security/advisories/new
+    about: >-
+      Privately, rather than in a public issue. See SECURITY.md for
+      what counts.
+  - name: How a figure is arrived at
+    url: https://github.com/sambitd0/investment-journey-simulator/blob/main/docs/SOURCES.md
+    about: >-
+      Every statutory parameter and every convention, dated and
+      sourced. Worth reading before reporting a tax figure.

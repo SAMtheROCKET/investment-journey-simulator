@@ -5,19 +5,31 @@ Run:
 
 Writes assets/journey_comparison.svg and .png.
 
+WHAT THE FOUR ARE
+
+Two controlled pairs, one per row, twenty years each.
+
+The top row is the same money, moved. Both people pay fifteen
+years of instalments and take a five-year break; the only
+difference is whether the break falls in years eleven to fifteen
+or years six to ten. Identical rupees in, and the finishing
+figures are ₹22.83 lakh apart.
+
+The bottom row is the same shape of life at two rates of raise,
+each drawing ₹5,000 a month out from year six, because most
+people's plans are interrupted by living rather than by stopping.
+
 WHY THE AXIS IS SHARED
 
-This picture exists to make one fact visible: not stepping up costs
-more than pausing and withdrawing put together, several times over.
-Let each panel scale its own vertical axis and that fact vanishes -
-₹6.32 crore draws exactly as tall as ₹17.29 crore, every curve
-looks like a healthy rising line, and the reader concludes the four
-outcomes are much of a muchness. Which is the opposite of true.
+Let each panel scale its own vertical axis and every one of them
+becomes the same healthy rising line, and the reader concludes the
+four outcomes are much of a muchness. Which is the opposite of
+true. So all four share one scale, fixed by the largest journey,
+and the short ones are *drawn* short.
 
-So all four panels share one scale, fixed by the largest journey.
-The short one is *drawn* short. That is the entire point of the
-figure and the reason it is generated rather than screenshotted:
-a screenshot would carry whatever axis the app happened to choose.
+That is the entire point of the figure and the reason it is
+generated rather than screenshotted: four screenshots each carry
+whatever axis the app chose for them, and the comparison dies.
 
 Every number comes from the engine. Nothing here is illustrative.
 """
@@ -65,15 +77,15 @@ from investment_journey_simulator.timeline import (  # noqa: E402
     EVENT_RESUME_STR,
     EVENT_START_SIP_STR,
     EVENT_STEPUP_STR,
-    EVENT_STOP_WITHDRAW_STR,
     EVENT_WITHDRAW_STR,
     TimelineEvent,
     TimelinePlan,
 )
 
 MONTHLY_AMOUNT_FLOAT: float = 25000.0
-PLAN_START_DATE: date = date(2026, 1, 1)
-HORIZON_YEARS_INT: int = 30
+WITHDRAWAL_AMOUNT_FLOAT: float = 5000.0
+PLAN_START_DATE: date = date(2027, 1, 1)
+HORIZON_YEARS_INT: int = 20
 RETURN_PERCENT_FLOAT: float = 12.0
 EXPENSE_PERCENT_FLOAT: float = 1.0
 CRORE_FLOAT: float = 10_000_000.0
@@ -119,76 +131,75 @@ def build_journey(name_str: str, event_list: list) -> PlanScenario:
     )
 
 
-def build_start_event_list() -> list:
-    """Twenty-five thousand a month, stepping up ten per cent."""
+def build_start_event() -> TimelineEvent:
+    """Twenty-five thousand a month, from the first month."""
+    return TimelineEvent(
+        EVENT_START_SIP_STR,
+        PLAN_START_DATE,
+        MONTHLY_AMOUNT_FLOAT,
+    )
+
+
+def build_break_event_list(break_start_year_int: int) -> list:
+    """Fifteen paying years with a five-year break inside them."""
     return [
+        build_start_event(),
         TimelineEvent(
-            EVENT_START_SIP_STR,
-            PLAN_START_DATE,
-            MONTHLY_AMOUNT_FLOAT,
+            EVENT_PAUSE_STR, date(break_start_year_int, 1, 1)
         ),
         TimelineEvent(
-            EVENT_STEPUP_STR, date(2027, 1, 1), percent_float=10.0
+            EVENT_RESUME_STR, date(break_start_year_int + 5, 1, 1)
+        ),
+    ]
+
+
+def build_raise_event_list(raise_percent_float: float) -> list:
+    """A rising instalment, with ₹5,000 a month drawn from year 6."""
+    return [
+        build_start_event(),
+        TimelineEvent(
+            EVENT_STEPUP_STR,
+            PLAN_START_DATE,
+            percent_float=raise_percent_float,
+        ),
+        TimelineEvent(
+            EVENT_WITHDRAW_STR,
+            date(2032, 1, 1),
+            WITHDRAWAL_AMOUNT_FLOAT,
         ),
     ]
 
 
 def build_journey_specification_list() -> list:
-    """The four journeys, in the order they are drawn."""
+    """The four journeys, in the order they are drawn.
+
+    Each row is a controlled pair: the left panel is the reference
+    and the right one differs by exactly one decision, so the
+    figure beside it is what that decision was worth.
+    """
     return [
         (
-            "A · Never interrupted",
-            "₹25,000 a month, rising 10% a year",
-            build_journey("A", build_start_event_list()),
+            "Pause later (5 years)",
+            "₹25,000 a month, nothing paid in years 11 to 15",
+            build_journey("Pause later", build_break_event_list(2037)),
         ),
         (
-            "B · Withdrew early",
-            "₹1 L a month for nine months, ten years in",
+            "Pause earlier (5 years)",
+            "The same money, the same break, in years 6 to 10",
             build_journey(
-                "B",
-                [
-                    *build_start_event_list(),
-                    TimelineEvent(
-                        EVENT_WITHDRAW_STR,
-                        date(2036, 1, 1),
-                        100000.0,
-                    ),
-                    TimelineEvent(
-                        EVENT_STOP_WITHDRAW_STR, date(2036, 10, 1)
-                    ),
-                ],
+                "Pause earlier", build_break_event_list(2032)
             ),
         ),
         (
-            "C · Paused two years",
-            "Nothing invested for two years",
-            build_journey(
-                "C",
-                [
-                    *build_start_event_list(),
-                    TimelineEvent(
-                        EVENT_PAUSE_STR, date(2033, 1, 1)
-                    ),
-                    # Two years off: paying again from January
-                    # 2035, so 2033 and 2034 are the silent ones.
-                    TimelineEvent(
-                        EVENT_RESUME_STR, date(2035, 1, 1)
-                    ),
-                ],
-            ),
+            "Step up 5% + SWP",
+            "Rising 5% a year, ₹5,000 a month out from year 6",
+            build_journey("Step up 5%", build_raise_event_list(5.0)),
         ),
         (
-            "D · Never stepped up",
-            "The same ₹25,000, for thirty years",
+            "Step up 10% + SWP",
+            "The same plan, rising 10% a year instead",
             build_journey(
-                "D",
-                [
-                    TimelineEvent(
-                        EVENT_START_SIP_STR,
-                        PLAN_START_DATE,
-                        MONTHLY_AMOUNT_FLOAT,
-                    )
-                ],
+                "Step up 10%", build_raise_event_list(10.0)
             ),
         ),
     ]
@@ -255,19 +266,54 @@ def add_panel(
     )
 
 
+def shade_break_window(
+    figure: go.Figure,
+    row_int: int,
+    column_int: int,
+    break_start_year_int: int,
+) -> None:
+    """Mark the five years in which nothing was paid in.
+
+    The two panels of the top row hold the same break, drawn in
+    two different places. Saying so in words underneath is weaker
+    than showing where it sits: the whole comparison is *when*.
+    """
+    figure.add_vrect(
+        x0=break_start_year_int,
+        x1=break_start_year_int + 5,
+        row=row_int,
+        col=column_int,
+        fillcolor=PANEL_FAINT_STR,
+        opacity=0.14,
+        line_width=0,
+        layer="below",
+        annotation_text="5 years off",
+        annotation_position="bottom left",
+        annotation_font=dict(
+            family=FONT_STACK_STR, size=11, color=PANEL_FAINT_STR
+        ),
+    )
+
+
 def build_annotation_dict(
     title_str: str,
     subtitle_str: str,
     final_float: float,
     delta_float: float,
 ) -> list:
-    """The four lines of text that sit inside one panel."""
+    """The four lines of text that sit inside one panel.
+
+    The last line is what this panel's one changed decision was
+    worth against the panel to its left, which is why the left
+    panel of each row says so rather than showing a zero.
+    """
     money_str = format_money_str(final_float)
-    delta_str = (
-        "Baseline"
-        if delta_float == 0.0
-        else f"−{format_money_str(abs(delta_float))}"
-    )
+    if delta_float == 0.0:
+        delta_str = "The reference for this row"
+    elif delta_float < 0.0:
+        delta_str = f"−{format_money_str(abs(delta_float))}"
+    else:
+        delta_str = f"+{format_money_str(delta_float)}"
     return [title_str, subtitle_str, money_str, delta_str]
 
 
@@ -278,7 +324,12 @@ def render_figure() -> go.Figure:
         read_trajectory_tuple(scenario)
         for _title, _subtitle, scenario in specification_list
     ]
-    baseline_float = trajectory_list[0][2]
+    # Each row compares against its own left-hand panel, because
+    # the four are two pairs rather than four variants of one plan.
+    reference_list = [
+        trajectory_list[index_int - index_int % 2][2]
+        for index_int in range(len(trajectory_list))
+    ]
     ceiling_float = (
         max(
             max(value_list)
@@ -294,11 +345,14 @@ def render_figure() -> go.Figure:
         horizontal_spacing=0.06,
         vertical_spacing=0.13,
     )
+    # The better outcome of each pair in the accent, the poorer one
+    # in the warning colour, so the rows read the same way round
+    # even though the change is in a different panel each time.
     colour_tuple = (
         PANEL_ACCENT_STR,
-        PANEL_MUTED_STR,
-        PANEL_MUTED_STR,
         PANEL_WARN_STR,
+        PANEL_WARN_STR,
+        PANEL_ACCENT_STR,
     )
     for index_int, (specification, trajectory) in enumerate(
         zip(specification_list, trajectory_list, strict=True)
@@ -314,6 +368,10 @@ def render_figure() -> go.Figure:
             value_list,
             colour_tuple[index_int],
         )
+        if index_int < 2:
+            shade_break_window(
+                figure, row_int, column_int, 10 - index_int * 5
+            )
         annotate_panel(
             figure,
             row_int,
@@ -322,7 +380,7 @@ def render_figure() -> go.Figure:
                 specification[0],
                 specification[1],
                 final_float,
-                final_float - baseline_float,
+                final_float - reference_list[index_int],
             ),
             colour_tuple[index_int],
         )
@@ -393,12 +451,13 @@ def style_figure(figure: go.Figure, ceiling_float: float) -> None:
         font=dict(family=FONT_STACK_STR, color=PANEL_INK_STR),
         title=dict(
             text=(
-                "<b>Same person, same income, same return "
-                "assumed, same retirement age</b><br>"
+                "<b>Twenty years each. One decision changed "
+                "across every row</b><br>"
                 "<span style='font-size:13px;"
                 f"color:{PANEL_MUTED_STR}'>"
-                "One decision changed in each. All four panels "
-                "share one vertical scale.</span>"
+                "Top row: the same ₹45,00,000 paid in, and the "
+                "same five years off, moved five years earlier. "
+                "All four panels share one vertical scale.</span>"
             ),
             x=0.5,
             xanchor="center",

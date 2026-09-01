@@ -38,7 +38,7 @@ workflow, and a badge that says green while a gate is off is worse
 than no badge.
 
 ```bash
-python -m pytest                  # 2,585 passed, 4 skipped
+python -m pytest                  # 2,488 passed, 3 skipped
 ruff check src tests tools streamlit_app.py
 mypy
 python tools/check_house_style.py # 0 long lines, 0 long functions

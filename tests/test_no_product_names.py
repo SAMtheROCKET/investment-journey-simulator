@@ -48,8 +48,9 @@ BANNED_NAME_TUPLE: tuple = (
 )
 
 # Directories that are not ours to police: the virtual environment,
-# tool caches, and `legacy/` - the superseded single-file scripts,
-# which sit outside every other gate in this project too.
+# tool caches, build output, and `_local/` - the working folder
+# that is never published and holds, among other things, the one
+# drawing that names real firms.
 SKIPPED_PART_TUPLE: tuple = (
     "env",
     ".mypy_cache",
@@ -58,6 +59,9 @@ SKIPPED_PART_TUPLE: tuple = (
     "__pycache__",
     "reports",
     "legacy",
+    "_local",
+    "build",
+    "dist",
 )
 
 
@@ -94,29 +98,19 @@ def find_banned_name_list(file_path: Path) -> list[str]:
     ]
 
 
-# One deliberate exemption, and the reasoning for it, because the
-# docstring above says never to weaken this rule and a silent
-# carve-out would be exactly that.
+# There are no exemptions, and the test below proves it.
 #
-# `diagrams/personal_flow.py` documents one person's own setup and
-# names the firms in it. It is exempt because it is not part of the
-# application: it lives in its own `EXPORT_BUILDER_DICT`, only the
-# render tool reads that registry, and the picture carries "example
-# only, not a recommendation" drawn inside it. Its output SVGs are
-# exempt for the same reason.
-#
-# The rule stands everywhere else, and the test below proves the
-# exemption is exactly this narrow rather than a hole.
-EXEMPT_NAME_TUPLE: tuple = (
-    "personal_flow.py",
-    "money_flow_personal_implementation_light.svg",
-    "money_flow_personal_implementation_dark.svg",
-)
+# There was one, for a drawing that documented one person's own
+# arrangement and named the firms in it. It has been moved out of
+# the published tree entirely rather than carved out of the rule:
+# the tool is a simulator, and whose bank anybody uses is not part
+# of it. A rule with no exceptions is also a rule nobody has to
+# check the boundaries of.
 
 
 def is_exempt_bool(file_path: Path) -> bool:
-    """Whether this file is the documented exception."""
-    return file_path.name in EXEMPT_NAME_TUPLE
+    """Nothing is exempt. Kept so the sweep reads as a sweep."""
+    return False
 
 
 CHECKED_PATH_LIST: list[Path] = collect_checked_path_list()
@@ -165,32 +159,22 @@ def test_the_compounding_claim_survives_without_a_name():
     assert "12.68%" in sources_str
 
 
-def test_the_exemption_covers_only_the_export():
-    """The carve-out must stay exactly one module wide.
+def test_no_file_claims_an_exemption():
+    """The carve-out is gone and must not come back.
 
-    An exemption that grew would quietly undo the rule, so this
-    fails if anything else is ever added to it, and if the exempt
-    module ever reaches the application's own diagram registry.
+    The drawing that needed one now lives outside the published
+    tree. If a future exemption is wanted, this fails first and the
+    reasoning has to be written down before the rule bends.
     """
-    from investment_journey_simulator.diagrams.money_flow import (
-        DIAGRAM_BUILDER_DICT,
-    )
-    from investment_journey_simulator.diagrams.personal_flow import (
-        EXPORT_BUILDER_DICT,
-    )
-
-    assert set(EXEMPT_NAME_TUPLE) == {
-        "personal_flow.py",
-        "money_flow_personal_implementation_light.svg",
-        "money_flow_personal_implementation_dark.svg",
-    }
-    overlap_set = set(DIAGRAM_BUILDER_DICT) & set(
-        EXPORT_BUILDER_DICT
-    )
-    assert overlap_set == set(), (
-        "the export-only diagram reached the registry the app "
-        f"renders from: {overlap_set}"
-    )
+    for file_path in CHECKED_PATH_LIST:
+        assert not is_exempt_bool(file_path)
+    assert not (
+        PROJECT_ROOT_PATH
+        / "src"
+        / "investment_journey_simulator"
+        / "diagrams"
+        / "personal_flow.py"
+    ).exists(), "the provider-named diagram is back in the package"
 
 
 def test_the_application_diagrams_name_nobody():

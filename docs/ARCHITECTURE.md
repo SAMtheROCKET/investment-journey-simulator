@@ -24,9 +24,7 @@ investment-journey-simulator/
 │   ├── diagrams/        generated SVGs, never hand-drawn
 │   └── reports/         generated output kept for reference
 ├── tools/               things you run *at* the project
-├── notebooks/           the earlier implementation the tests check against
-├── assets/              images the documentation points at
-└── legacy/              seven superseded scripts, kept honestly
+└── assets/              images the documentation points at
 ```
 
 `src/` holds the package and nothing else. That is the whole point
@@ -35,11 +33,14 @@ would, so a missing `__init__.py` or a file left out of the
 distribution fails the suite instead of passing quietly because the
 repository root happened to be on the path.
 
-`legacy/` is the one folder that is not held to any gate. It has
-seven single-file scripts in it, each a stage this project went
-through before it was a package. They are kept because deleting the
-history of a thing makes the thing look more inevitable than it
-was.
+The stages this project went through before it was a package - a
+notebook and eight single-file scripts - are kept, but outside the
+published tree. None of them would pass a single gate held here,
+and a repository that ships its own drafts asks every reader to
+work out which files are the real ones. What they contributed is
+still in the suite: `tests/reference_data.py` carries the figures
+the notebook produced, so the cross-check between two independent
+implementations is asserted on every run.
 
 ## Anything the program reads at run time lives inside the package
 

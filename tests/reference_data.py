@@ -13,15 +13,18 @@ Provenance tags used across the whole test suite:
                     2026-08-04; see tests/README.md for the list.
                     Re-verify after each Budget.
     G3-CROSSCHECK   Values produced by an independent earlier
-                    implementation, `notebooks/testing.ipynb`, written
-                    before this package existed. Agreement between
-                    two independent implementations is the check.
+                    implementation, a notebook written before this
+                    package existed and kept outside the published
+                    tree. Agreement between two independent
+                    implementations is the check, and the figures
+                    it produced are copied in below so the check
+                    survives without it.
     G4-SYNTHETIC    Hand-derived scenario whose arithmetic is shown
                     in the test docstring.
     G5-PLAUSIBILITY Real-world magnitudes used only as realistic
                     inputs, never asserted as truth.
 
-The reimplementations below are copied from `notebooks/testing.ipynb`
+The reimplementations below are copied from that notebook
 deliberately. They must stay naive and independent of the package.
 """
 
@@ -73,7 +76,7 @@ PLAUSIBLE_SLAB_RATE_PERCENT_FLOAT: float = 30.0
 
 # ------------------------------------------------------------------
 # G3-CROSSCHECK: expected dictionaries copied verbatim from
-# notebooks/testing.ipynb. Keys are horizons in years.
+# the earlier notebook. Keys are horizons in years.
 # ------------------------------------------------------------------
 NOTEBOOK_SIP_EXPECTED_DICT: dict[int, dict[str, float]] = {
     1: {"invested": 1200.0, "future_value": 1276.6498},

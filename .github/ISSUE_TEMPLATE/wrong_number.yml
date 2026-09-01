@@ -1,0 +1,60 @@
+name: A number looks wrong
+description: A figure disagrees with your own working, a statute, or a published example.
+title: "[figure] "
+labels: ["correctness"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most valuable report this project can receive,
+        and it is kept separate from ordinary bugs for that reason.
+        Three defects have been found this way and every one is in
+        the changelog.
+
+        Please attach the scenario JSON. The engine is
+        deterministic, so it reproduces the figure exactly.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "4.4.2"
+    validations:
+      required: true
+
+  - type: input
+    id: shown
+    attributes:
+      label: The figure this tool showed
+      placeholder: "₹1,70,57,325"
+    validations:
+      required: true
+
+  - type: input
+    id: expected
+    attributes:
+      label: The figure you make it
+      placeholder: "₹1,70,60,000"
+    validations:
+      required: true
+
+  - type: textarea
+    id: working
+    attributes:
+      label: Your working
+      description: >-
+        A formula, a spreadsheet, a section of the Act, or the
+        published example you compared against. If it is a tax
+        figure, say which rule you are applying: the parameters
+        this project uses are dated and sourced in
+        docs/SOURCES.md.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Scenario JSON
+      render: json
+    validations:
+      required: true

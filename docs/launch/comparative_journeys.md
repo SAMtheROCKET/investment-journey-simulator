@@ -221,6 +221,139 @@ them, construct the journeys described above on the **Guided
 Journey** screen, save each under its name on **Compare Journeys**,
 and read the attribution.
 
+### The four panels, keystroke by keystroke
+
+This is the picture at the top of the README, written out as things
+to type. Set the asset once, then build four journeys: two pairs,
+each pair differing by exactly one decision.
+
+**The asset, and the plan, identical in all four**
+
+| Field | Value |
+|---|---|
+| Plan starts | January 2027 |
+| Horizon | 20 years |
+| Assets | one, 100% allocation |
+| Monthly instalment | ₹25,000 |
+| Assumed return | 12% a year, gross |
+| Expense ratio | 1.0% a year, simple |
+| Long-term rate · threshold | 12.5% · 12 months |
+| Short-term rate | 20% |
+| Exemption | ₹1,25,000 a year, long-term gains only |
+
+#### The pair that isolates timing
+
+Both pay in **exactly ₹45,00,000** and both take five years off.
+Only the placement of the break differs, which is the whole point:
+nothing else in either plan is different.
+
+**Pause later (5 years)**
+
+| Month | Event | Value |
+|---|---|---|
+| Jan 2027 | Start investing | ₹25,000 a month |
+| Jan 2037 | Pause investing | |
+| Jan 2042 | Resume investing | |
+
+Ends on **₹1,70,57,325** (₹1.71 Cr).
+
+**Pause earlier (5 years)**
+
+| Month | Event | Value |
+|---|---|---|
+| Jan 2027 | Start investing | ₹25,000 a month |
+| Jan 2032 | Pause investing | |
+| Jan 2037 | Resume investing | |
+
+Ends on **₹1,47,74,125** (₹1.48 Cr), which is **₹22,83,200 less**
+for the same ₹45,00,000 paid in. Attribution puts the whole gap on
+one cause and leaves nothing unexplained:
+
+```
+Pause later  →  Pause earlier
+
+  Compounding lost to the pause        ₹-22,83,200
+  unexplained                                   ₹0
+```
+
+The resume months are January, so 2037 to 2041 and 2032 to 2036 are
+the silent years in each: a pause window is inclusive at its start
+and the resume month pays.
+
+#### The pair that isolates the raise
+
+Both draw **₹5,000 a month out from January 2032** and run for the
+same twenty years, because a plan interrupted by living is the
+ordinary case rather than the exception.
+
+**Step up 5% + SWP**
+
+| Month | Event | Value |
+|---|---|---|
+| Jan 2027 | Start investing | ₹25,000 a month |
+| Jan 2027 | Step up | 5% a year |
+| Jan 2032 | Start withdrawing | ₹5,000 a month |
+
+Paid in ₹99,19,786, drew out ₹9,00,000, ends on **₹2,64,64,380**.
+
+**Step up 10% + SWP**
+
+| Month | Event | Value |
+|---|---|---|
+| Jan 2027 | Start investing | ₹25,000 a month |
+| Jan 2027 | Step up | 10% a year |
+| Jan 2032 | Start withdrawing | ₹5,000 a month |
+
+Paid in ₹1,71,82,500, drew out ₹9,00,000, ends on **₹4,02,25,852**
+- **₹1,37,61,472 more** for ₹72,62,714 more paid in.
+
+#### What the picture is for
+
+The two rows answer two different questions, and only the first is
+a fair fight. The top row moves nothing but the calendar, so its
+₹22,83,200 is purely what *timing* was worth. The bottom row pays
+in more as well as raising faster, so its gap is a raise and its
+consequences together, not a free lunch.
+
+All four are drawn to one vertical scale, which is why
+`tools/render_journey_comparison.py` fixes the axis by the largest
+journey rather than letting each panel choose its own. Four
+screenshots stitched together each carry whatever scale the app
+chose for them, and the comparison dies. If the panels are to be
+captured from the screen rather than generated, put all four on
+**Compare Journeys** at once: one chart, one axis.
+
+### What an interruption costs, and when
+
+The same arithmetic decides every interruption, and it is worth
+writing down on its own. A plain ₹25,000 plan, twenty years, 12%,
+with ₹6,00,000 taken out of it:
+
+| When the ₹6,00,000 leaves | Ends with | What it cost |
+|---|---|---|
+| Never | ₹2,03,90,181 | - |
+| All at once, in year 16 | ₹1,93,87,901 | ₹10,02,280 |
+| ₹5,000 a month, years 6 to 15 | ₹1,86,15,896 | ₹17,74,285 |
+| All at once, in year 6 | ₹1,75,44,285 | ₹28,45,896 |
+
+One amount, one plan, and a cost between ₹10 lakh and ₹28 lakh
+depending on nothing but when it left. Every figure in that last
+column is larger than the ₹6,00,000 itself, because what you spend
+is the money and what it costs is the money plus everything it
+would have earned.
+
+Two consequences follow from the arithmetic, and neither is a
+recommendation. Spreading a withdrawal into instalments costs less
+than taking the same total in one go, because most of it stays
+invested while the rest is drawn down. Borrowing rather than
+withdrawing is the same trade running the other way: the corpus
+keeps compounding and interest is paid for that, which comes out
+ahead only if the borrowing rate is below the return actually
+realised - and the return is an assumption, while the interest is a
+contract. This document reports what the stated assumptions imply.
+It is not advice, and nothing in it is a substitute for a licensed
+adviser.
+
 The tables above were generated directly against
 `investment_journey_simulator.scenario_set.run_journey_outcome` and
 `investment_journey_simulator.attribution.attribute_gap`.

@@ -48,6 +48,30 @@ A goal the solver could reach and one screen refused to show.
   other screens allow. The fault only existed in the gap between
   two screens, so checking the one that happened to break would
   not have found it.
+- The four recordings the README describes, plus a slow pass over
+  the Advanced Simulator, and a regenerated comparison figure built
+  from two controlled pairs of twenty-year journeys.
+- `SECURITY.md`, `CITATION.cff` and issue templates that ask for
+  the scenario JSON, because a deterministic engine turns "the
+  number looks wrong" into something reproducible.
+- `.gitattributes`, so line endings are decided once rather than by
+  whichever machine last touched a file.
+
+### Removed
+
+- The self-awarded scorecard. `docs/VALIDATION_AND_LIMITATIONS.md`
+  replaces it with what was measured and what this tool does not
+  do. A grade invites an argument about the grade; twenty-nine
+  thousand cross-checked plans do not need one.
+- The superseded single-file scripts, the exploratory notebooks,
+  the recording plan and the social copy. All are kept, none are
+  published: a repository that ships its own drafts asks every
+  reader to work out which files are the real ones. The figures the
+  notebook produced remain asserted in `tests/reference_data.py`.
+- The one diagram that named real firms. It documented a personal
+  arrangement and is now outside the package entirely, which also
+  removes the last exemption from the rule against naming
+  products.
 
 ## 4.4.1 - 31 August 2026
 

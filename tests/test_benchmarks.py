@@ -48,7 +48,7 @@ def test_engine_matches_notebook_sip_values(
 ) -> None:
     """The engine must reproduce the notebook's SIP table.
 
-    REFERENCE: G3-CROSSCHECK against notebooks/testing.ipynb, and
+    REFERENCE: G3-CROSSCHECK against the earlier notebook, and
     G1-ANALYTIC because those values are the annuity-due formula.
     Inputs: 100 per month at 12 percent, start of month.
     """
@@ -74,7 +74,7 @@ def test_engine_matches_notebook_stepup_values(
 ) -> None:
     """The engine must reproduce the notebook's step-up table.
 
-    REFERENCE: G3-CROSSCHECK against notebooks/testing.ipynb.
+    REFERENCE: G3-CROSSCHECK against the earlier notebook.
     Inputs: 100 per month at 12 percent, 10 percent yearly
     step-up applied on every twelfth month, start of month.
     """
@@ -138,7 +138,7 @@ def test_engine_matches_notebook_three_fund_table(
 ) -> None:
     """Reproduce the notebook's three-fund fifteen-year table.
 
-    REFERENCE: G3-CROSSCHECK against notebooks/testing.ipynb.
+    REFERENCE: G3-CROSSCHECK against the earlier notebook.
     Inputs: 3000 per month for 15 years at 10, 12 and 14 percent.
     """
     simulation_result = PortfolioSimulator(
@@ -165,7 +165,7 @@ def test_engine_matches_notebook_paused_sip(
 ) -> None:
     """Pausing two whole years must match the notebook exactly.
 
-    REFERENCE: G3-CROSSCHECK against notebooks/testing.ipynb.
+    REFERENCE: G3-CROSSCHECK against the earlier notebook.
     Inputs: 1000 per month at 10 percent for 8 years, with two
     paused years starting at the given year.
     """

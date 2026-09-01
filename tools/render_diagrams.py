@@ -24,17 +24,29 @@ from investment_journey_simulator.diagrams.money_flow import (  # noqa: E402
     CANVAS_WIDTH_INT,
     DIAGRAM_BUILDER_DICT,
 )
-from investment_journey_simulator.diagrams.personal_flow import (  # noqa: E402
-    EXPORT_BUILDER_DICT,
-)
 
-# The application's diagrams, plus the export-only one that names
-# providers. The two registries are separate on purpose: only this
-# tool reads the second, so the named-provider picture cannot reach
-# a screen without somebody deliberately wiring it to one.
+
+def load_private_builder_dict() -> dict:
+    """The one drawing that names real firms, if it is present.
+
+    It documents one person's own arrangement, so it lives under
+    `_local/diagrams/` rather than in the package: the published
+    tool is a simulator, not a record of anybody's banking. This
+    tool still renders it when the file is there, and a clean
+    public clone simply has one diagram fewer.
+    """
+    private_path = ROOT_PATH / "_local" / "diagrams"
+    if not (private_path / "personal_flow.py").is_file():
+        return {}
+    sys.path.insert(0, str(private_path))
+    from personal_flow import EXPORT_BUILDER_DICT  # noqa: PLC0415
+
+    return dict(EXPORT_BUILDER_DICT)
+
+
 ALL_BUILDER_DICT: dict = {
     **DIAGRAM_BUILDER_DICT,
-    **EXPORT_BUILDER_DICT,
+    **load_private_builder_dict(),
 }
 
 OUTPUT_PATH = ROOT_PATH / "docs" / "diagrams"

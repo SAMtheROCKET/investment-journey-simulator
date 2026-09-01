@@ -5,7 +5,7 @@ python -m pytest tests -q                       # run everything
 python -m pytest tests -q --cov=investment_journey_simulator   # with coverage
 ```
 
-**Current status: 2,585 passed · 4 intentionally skipped · 93%
+**Current status: 2,488 passed · 3 intentionally skipped · 93%
 statement coverage.**
 
 The four skips are deliberate and self-describing: two files exempt
@@ -18,7 +18,7 @@ runner, so widget-level failures are caught by CI.
 Quality gate (all green, all in CI):
 
 ```bash
-python -m pytest                       # 2,585 passed, 4 skipped
+python -m pytest                       # 2,488 passed, 3 skipped
 ruff check src tests tools streamlit_app.py
 python tools/check_house_style.py      # 0 long lines, 0 long functions
 mypy                                   # 0 errors
@@ -33,7 +33,7 @@ from a stack trace:
 
 | Requirement | Covers | Without it |
 |---|---|---|
-| **Streamlit** | 13 of the 56 test files - every page, the portal shell, the rail and the input styles | those files cannot import and the run aborts at collection |
+| **Streamlit** | 16 of the 61 test files - every page, the portal shell, the rail and the input styles | those files cannot import and the run aborts at collection |
 | **Kaleido** | the PDF export's chart rasterisation, in `test_presentation.py` | those tests skip. The four skips in the count above are not these: they are the deliberate exemptions described above |
 
 `pip install -e .` pulls both, as does `pip install -r
@@ -71,7 +71,7 @@ trustworthy as the thing it was compared with.
 |---|---|---|
 | **G1-ANALYTIC** | Closed-form mathematics or a standard financial function. The expected value is computed **live from the formula** inside the test, so it cannot silently drift. | Strongest. Identical to what a spreadsheet `FV()` produces. |
 | **G2-STATUTORY** | Indian Income-tax Act parameters - rates, thresholds, exemption, financial-year boundary, FIFO. | Strong, but **time-sensitive**: verify against the current Act. |
-| **G3-CROSSCHECK** | Values from `notebooks/testing.ipynb`, an independent earlier implementation written before this package existed. Two independent implementations agreeing is real evidence. | Strong for the features it covers. |
+| **G3-CROSSCHECK** | Values from an independent earlier implementation, a notebook written before this package existed and kept outside the published tree. Two independent implementations agreeing is real evidence. | Strong for the features it covers. |
 | **G4-SYNTHETIC** | Hand-derived scenario with the arithmetic shown in the test docstring, or a branch/guard test. | Verifies logic, not real-world fidelity. |
 | **G5-PLAUSIBILITY** | Real-world magnitudes (12% equity, 6% inflation, 0.5% TER, 30% slab) used **only as inputs**, never asserted as truth. | Not evidence of anything - realism of inputs only. |
 
@@ -169,7 +169,7 @@ amendment is a one-line change.
 
 ### G3 - Independent implementation cross-check
 
-Every expected dictionary from `notebooks/testing.ipynb` is replayed
+Every expected dictionary copied out of that notebook is replayed
 through the full engine. The notebook was written independently,
 before this package existed, so agreement is genuine evidence.
 

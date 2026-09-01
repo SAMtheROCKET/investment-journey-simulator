@@ -51,3 +51,11 @@ _local/*
 # the SVGs beside them are the tracked artefact, and both regenerate
 # from src/investment_journey_simulator/diagrams/money_flow.py.
 docs/diagrams/*.png
+
+# Superseded single-file scripts and exploratory notebooks. Both
+# were real steps in getting here and neither belongs in a public
+# tree: the scripts are outside every gate this project holds, and
+# a notebook carries its outputs, its execution counts and whatever
+# was in the kernel when it was last run.
+legacy/
+notebooks/

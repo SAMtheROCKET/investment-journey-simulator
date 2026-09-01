@@ -42,9 +42,10 @@ offers the control that the timeline cannot reach.
 | `SimulationSettings.sip_at_month_start_bool` | hardcoded `True` at `timeline.py:700` | `ui/sidebar_controls.py:127` |
 
 This decides whether an instalment compounds for the month it is
-paid in. It is the exact convention `docs/SCORECARD.md` cites for
-matching a major platform's published figure to the rupee while
-two other widely-used calculators diverge. A
+paid in. It is the exact convention documented in
+`docs/SOURCES.md`, and the reason this engine matches a major
+platform's published figure to the rupee while two other
+widely-used calculators diverge. A
 merged portal that silently pins it to `True` on some screens and
 exposes it on others will produce two different corpus figures for
 the same plan and offer no explanation.

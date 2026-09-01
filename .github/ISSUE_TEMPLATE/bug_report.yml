@@ -1,0 +1,89 @@
+name: Bug report
+description: Something behaved differently from what it says it does.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The engine is deterministic, so a saved scenario file plus a
+        version number reproduces any figure this tool has ever
+        produced. Attaching one turns a report into something that
+        can be fixed quickly.
+
+        A saved scenario contains your amounts and dates. Round or
+        edit them if that matters to you; the shape of the plan is
+        what matters here, not the true figures.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: From the sidebar, or `pip show investment-journey-simulator`.
+      placeholder: "4.4.2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: screen
+    attributes:
+      label: Which screen
+      options:
+        - Quick Projection
+        - Guided Journey
+        - Advanced Simulator
+        - Compare Journeys
+        - Goal Planner
+        - Historical & Risk Lab
+        - Rebalancing Lab
+        - Reports & Audit
+        - Guides
+        - Home, or not screen specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: >-
+        And how you worked it out, if a figure is wrong: a
+        spreadsheet, a statute, a published example, or arithmetic
+        on paper. That is what makes a wrong number fixable rather
+        than arguable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+      description: The figure shown, the message, or the traceback.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Smallest plan that shows it
+      description: >-
+        The fewest events that still reproduce it. If a plain
+        monthly contribution over ten years shows the problem, say
+        that rather than attaching a plan with thirty events in it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Scenario JSON
+      description: >-
+        Reports & Audit → export, or the download button on the
+        timeline. Paste it here or attach the file.
+      render: json
+
+  - type: input
+    id: environment
+    attributes:
+      label: Python and operating system
+      placeholder: "3.13 on Windows 11, or the hosted app"

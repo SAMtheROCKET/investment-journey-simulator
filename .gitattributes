@@ -1,0 +1,37 @@
+# Line endings, decided once.
+#
+# Without this, a Windows checkout can commit CRLF, a Linux one LF,
+# and the diff fills with whole files that nobody edited. Text is
+# normalised to LF in the repository and checked out however the
+# platform prefers; binaries are declared so git never touches them.
+
+* text=auto eol=lf
+
+*.py    text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.toml  text eol=lf
+*.cfg   text eol=lf
+*.ini   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.csv   text eol=lf
+*.svg   text eol=lf
+*.cff   text eol=lf
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.xlsx  binary
+*.whl   binary
+*.zip   binary
+*.ipynb binary
+
+# Generated output and vendored history are not worth diffing or
+# counting as authored code on the language bar.
+docs/reports/*.md linguist-generated=true
+src/investment_journey_simulator/data/*.csv linguist-generated=true

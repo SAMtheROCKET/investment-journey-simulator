@@ -1,22 +1,20 @@
 # Investment Journey Simulator
 
-**What your investments could become - and how much the decisions
-along the way change that number.**
+**Most SIP calculators will tell you what ₹25,000 a month becomes.
+Far fewer will show you what stopping for five years actually
+costs.**
 
-[![tests](https://img.shields.io/badge/tests-2%2C585%20passing-2ea44f)](tests/README.md)
+*Decisions compound too.*
+
+[![quality](https://github.com/sambitd0/investment-journey-simulator/actions/workflows/quality.yml/badge.svg)](https://github.com/sambitd0/investment-journey-simulator/actions/workflows/quality.yml)
+[![tests](https://img.shields.io/badge/tests-2%2C488%20passing-2ea44f)](tests/README.md)
 [![coverage](https://img.shields.io/badge/coverage-93%25-2ea44f)](tests/README.md)
 [![ruff](https://img.shields.io/badge/ruff-clean-2ea44f)](pyproject.toml)
 [![mypy](https://img.shields.io/badge/mypy-clean-2ea44f)](pyproject.toml)
 [![python](https://img.shields.io/badge/python-3.11%2B-3776ab)](pyproject.toml)
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
-<!--
-  HERO. Replace this comment with the recording once it exists:
-
-  ![Plan a journey by clicking on a timeline](assets/hero.gif)
-
-  Shot list and recording brief: docs/launch/demo_script.md
--->
+![Plan a journey by clicking on a timeline](assets/hero.gif)
 
 **[Try it online](#)** · **[Run it locally](#running-it)** ·
 **[Documentation](docs/)**
@@ -25,21 +23,66 @@ along the way change that number.**
 
 ## Why this exists
 
-Most SIP calculators will tell you what ₹25,000 a month becomes.
-Far fewer will show you what stopping for two years actually costs,
-and fewer still will tell you *why* two plans ended up apart. That
-second question is the one people actually have.
+> **"Compounding is the eighth wonder of the world. He who
+> understands it, earns it; he who doesn't, pays it."**
+>
+> An old saying with no reliable author, repeated here because the
+> sentence is right and because this whole tool is an argument
+> that the second half of it is the part people live with. Every
+> other number on this page is sourced. This one is a proverb, and
+> is marked as one.
+
+Most calculators answer the first question and stop. Far fewer will
+show you what a five-year break costs, and fewer still will tell
+you *why* two plans ended up apart. That second question is the one
+people actually have.
 
 ![Four journeys, one shared scale](assets/journey_comparison.png)
 
-Same person, same income, same assumed return, same retirement age.
-One decision changed in each, and all four drawn to **one vertical
-scale** - because letting each panel scale itself would make the
-₹6.32 crore outcome look as tall as the ₹17.29 crore one, which is
-the opposite of the point.
+**The top row is the same money, moved.** Both plans pay in exactly
+₹45,00,000 over twenty years, and both take five years off. The
+only difference is *when*: years 11 to 15, or years 6 to 10. The
+earlier break finishes **₹22,83,200 lower** - not because less went
+in, but because the missing instalments were the ones with the most
+time left to grow.
+
+All four panels are drawn to **one vertical scale**, because
+letting each scale itself would make ₹1.48 crore stand as tall as
+₹4.02 crore, which is the opposite of the point.
 
 Every figure is real engine output, reproduced with its inputs in
 [comparative_journeys.md](docs/launch/comparative_journeys.md).
+
+### When it happens matters more than how much it is
+
+The same rule decides what any interruption costs, and it is worth
+stating plainly because it is the one thing a total-only calculator
+cannot tell you. Take ₹6,00,000 out of a plain ₹25,000 plan running
+twenty years at 12%:
+
+| When the ₹6,00,000 leaves | Ends with | What it cost |
+|---|---|---|
+| Never | ₹2,03,90,181 | - |
+| All at once, in year 16 | ₹1,93,87,901 | ₹10,02,280 |
+| ₹5,000 a month, years 6 to 15 | ₹1,86,15,896 | ₹17,74,285 |
+| All at once, in year 6 | ₹1,75,44,285 | ₹28,45,896 |
+
+One amount, one plan, and a cost that runs from ₹10 lakh to ₹28
+lakh depending on nothing but timing. Notice too that every one of
+those costs is larger than the ₹6,00,000 itself: what you spend is
+the money, what it costs is the money *and* everything it would
+have earned afterwards.
+
+Two things follow, and neither is advice. **Spreading a withdrawal
+into instalments costs less than taking it in one go**, because
+most of the money stays invested while the rest is drawn down.
+**Borrowing instead of withdrawing is the same trade running the
+other way**: the corpus keeps compounding and you pay interest for
+the privilege, which comes out ahead only if the borrowing rate is
+below the return you actually get - and the return is an
+assumption, while the interest is a contract. This tool computes
+the consequences of assumptions. It does not tell you which of
+those to make, and it is not a substitute for a licensed adviser.
 
 ---
 
@@ -48,9 +91,9 @@ Every figure is real engine output, reproduced with its inputs in
 Most tools stop at those four numbers. This one explains them:
 
 ```
-Never interrupted  →  Never stepped up
+Pause later  →  Pause earlier
 
-  The raise that never happened     ₹-10,96,53,859
+  Compounding lost to the pause        ₹-22,83,200
   unexplained                                   ₹0
 ```
 
@@ -153,11 +196,7 @@ the number of causes. That is why the causes are capped at six.
 Worked in full, with the inputs:
 [comparative_journeys.md](docs/launch/comparative_journeys.md#2b-four-decisions-at-once-which-is-how-life-arrives).
 
-<!--
-  SHORT LOOP 1 - Compare Journeys and the attribution panel.
-  8 seconds, no audio, no cursor hunting.
-  ![Comparing two journeys](assets/compare.gif)
--->
+![Comparing two journeys](assets/compare.gif)
 
 ---
 
@@ -189,13 +228,7 @@ gone into. That is a state machine, not a pile of `if` statements,
 and it is why the plan you draw is always a plan the engine can
 actually run.
 
-<!--
-  SHORT LOOP 2 - the timeline.
-  10 seconds: hover a month, add a career break, watch the corpus
-  figure move. This is the single most convincing thing the tool
-  does; if only one recording is ever made, make it this one.
-  ![Adding a career break to a timeline](assets/timeline.gif)
--->
+![Adding a career break to a timeline](assets/timeline.gif)
 
 ---
 
@@ -205,11 +238,7 @@ Say what you want and when. It solves for the monthly amount, and
 tells you whether the answer is plausible rather than only what it
 is.
 
-<!--
-  SHORT LOOP 3 - the goal planner.
-  6 seconds: type a target, read the required instalment.
-  ![Solving for a monthly amount](assets/goal.gif)
--->
+![Solving for a monthly amount](assets/goal.gif)
 
 ---
 
@@ -257,17 +286,21 @@ src/
     diagrams/        money-flow pictures, drawn by code
     data/            index history the risk lab replays
     guides/          the checklists the Guides screen serves
-tests/               2,585 passing, and two independent simulators
+tests/               2,488 passing, and two independent simulators
                      written to disagree with the engine
 docs/                features, sources, architecture, design notes
   diagrams/          the generated money-flow SVGs
   reports/           generated output kept for reference
 tools/               things you run at the project, not in it
-notebooks/           the earlier implementation the tests check against
 assets/              images the documentation points at
-legacy/              seven superseded single-file scripts, outside
-                     every quality gate and kept anyway
 ```
+
+The earlier notebook this engine was cross-checked against, and the
+superseded single-file scripts that came before it, are kept
+outside the published tree. Their figures are not: the values
+copied out of the notebook live in `tests/reference_data.py` and
+are asserted on every run, so the cross-check survives without the
+notebook needing to.
 
 **Why the data and the guides live inside the package.** Because a
 wheel does not carry the repository. Both used to sit beside it and
@@ -348,6 +381,31 @@ quietly run a plan you cannot see.
 
 > **Lossy in display. Never lossy in data.**
 
+**Three of those screens deserve naming individually.**
+
+- **Advanced Simulator** is the most impressive screen here and the
+  worst possible opener. Every control the engine has is on it at
+  once, which answers "is this serious?" and destroys "is this for
+  me?" in the same glance. It is placed accordingly: deep in the
+  page, for the reader who has already decided they want the
+  controls.
+- **Historical & Risk Lab** replays your own plan over real index
+  history rather than a smooth 12%, and shows what the *order* of
+  returns does to the same money. It is the honest counterweight to
+  every other figure on this page.
+- **Rebalancing Lab** prices nine rebalancing policies against each
+  other on your plan, with the tax and the turnover each one
+  actually costs rather than the theory of it.
+
+The last two are the most practical instruments in the project, and
+both are for the second visit rather than the first: they answer
+questions you only have once you have seen a plan through.
+
+![Every control on one screen](assets/advance.gif)
+
+*One pass down the Advanced Simulator, with nothing clicked: every
+control the engine has, and the charts and tables they drive.*
+
 ---
 
 ## How the money gets there
@@ -356,6 +414,13 @@ Before any of the arithmetic matters, the money has to physically
 reach an account that can buy anything. For somebody earning abroad
 that is six steps, one border and one change of currency, and it is
 the part most calculators assume you have already solved.
+
+![From foreign income to an Indian holding](assets/money_flow.png)
+
+Every box is a *kind* of account or a *kind* of instruction, never
+a provider. Which bank, which platform and which broker are choices
+this project has no business making for you, and the shape of the
+route is the same whoever you pick.
 
 **Guides** opens with three diagrams, generated from data in
 `diagrams/money_flow.py` rather than pasted in as images, so they
@@ -432,7 +497,7 @@ plan out of order and adding the missing start later clears it.
 ## Why you should believe any of it
 
 **What a full run needs.** The figure below is the whole suite with
-every dependency installed. Streamlit is imported by 13 of the 56
+every dependency installed. Streamlit is imported by 16 of the 61
 test files - every page, the portal shell, the rail and the input
 styles - and without it those files cannot even be collected.
 Kaleido rasterises the charts the PDF export embeds. Both arrive
@@ -445,7 +510,7 @@ cannot exercise the screens that display one.
 
 | Gate | Status |
 |---|---|
-| Tests | **2,585 passing**, 4 intentionally skipped |
+| Tests | **2,488 passing**, 3 intentionally skipped |
 | Statement coverage | **93%** |
 | Ruff findings | **0** |
 | Mypy errors | **0** |
@@ -537,7 +602,7 @@ Full write-up, including what is still *not* cross-checked:
 
 Full detail: [FEATURES.md](docs/FEATURES.md) ·
 [ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
-[SCORECARD.md](docs/SCORECARD.md) ·
+[validation and limitations](docs/VALIDATION_AND_LIMITATIONS.md) ·
 [SOURCES.md](docs/SOURCES.md) ·
 [test provenance](tests/README.md) ·
 [design notes](docs/design/) ·
@@ -589,7 +654,13 @@ anything you are about to act on.
 fixed.
 [CONTRIBUTING.md](CONTRIBUTING.md) - the gates, the house rules, and
 how to report a wrong number.
+[validation and limitations](docs/VALIDATION_AND_LIMITATIONS.md) -
+what has been measured, and what this does not do.
+[SECURITY.md](SECURITY.md) - reporting a vulnerability, or a number
+you believe is wrong.
 [LICENSE](LICENSE) - MIT.
+
+> **You define the assumptions. It shows you their consequences.**
 
 Built by [Sambit Supriya Dash](https://github.com/sambitd0), mostly
 because the calculators I could find would tell me what ₹10,000 a
