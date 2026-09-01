@@ -44,7 +44,6 @@ Thumbs.db
 # explaining what the folder is for, so a fresh clone gets the
 # folder rather than having to guess it was meant to exist.
 _local/*
-!_local/README.md
 
 # Rasterised diagram previews. `tools/render_diagrams.py --preview`
 # writes these so a change can be looked at rather than guessed at;
