@@ -16,7 +16,7 @@ costs.**
 
 ![Plan a journey by clicking on a timeline](assets/hero.gif)
 
-**[Try it online](#)** · **[Run it locally](#running-it)** ·
+**[Try it online](https://investment-journey.streamlit.app)** · **[Run it locally](#running-it)** ·
 **[Documentation](docs/)**
 
 ---
