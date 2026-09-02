@@ -1,5 +1,10 @@
 # Investment Journey Simulator
 
+An open-source Python and Streamlit investment planning simulator for SIPs
+(systematic investment plans), lump sums, contribution pauses, withdrawals,
+tax-aware cash flows, portfolio rebalancing, historical backtesting,
+Monte Carlo simulation, goal planning and long-term portfolio outcomes.
+
 **Most SIP calculators will tell you what ₹25,000 a month becomes.
 Far fewer will show you what stopping for five years actually
 costs.**
@@ -18,6 +23,26 @@ costs.**
 
 **[Try it online](https://investment-journey.streamlit.app)** · **[Run it locally](#running-it)** ·
 **[Documentation](docs/)**
+
+## What you can model
+
+- **SIP and systematic investment plans** with monthly contributions,
+  step-ups, pauses, restarts and lump-sum investments
+- **Withdrawals and cash-flow timing**, including one-off and recurring
+  withdrawals and later investment restarts
+- **Portfolio rebalancing** across multiple funds and target allocations
+- **Goal planning and goal seek** for required contribution, return or
+  investment horizon
+- **Historical backtesting and replay** to examine timing and sequence risk
+- **Monte Carlo simulation and stochastic scenarios** for uncertainty and
+  long-term outcome ranges
+- **Tax-aware investment outcomes** for the supported Indian
+  resident-individual scope
+- **XIRR and post-tax XIRR**, inflation-adjusted values and long-term
+  portfolio projections
+- **Journey comparison and decision attribution** to explain why two
+  investment plans produce different outcomes
+
 
 ---
 

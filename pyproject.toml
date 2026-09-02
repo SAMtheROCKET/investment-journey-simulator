@@ -8,17 +8,27 @@ name = "investment-journey-simulator"
 # distribution and the package can never disagree. See the note
 # in that module for how this differs from the scenario schema.
 dynamic = ["version"]
-description = "Model any asset, any contribution and any life event, then compare how the decisions compound."
+description = "Open-source investment planning simulator for SIPs, lump sums, contribution pauses, withdrawals, tax-aware cash flows, portfolio rebalancing, historical backtesting, Monte Carlo simulation and goals."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Sambit Supriya Dash", email = "86950017+SAMtheROCKET@users.noreply.github.com" }]
 keywords = [
     "investment",
-    "simulation",
+    "investment-planning",
     "financial-planning",
-    "scenario-analysis",
+    "sip",
+    "systematic-investment-plan",
+    "portfolio",
+    "portfolio-rebalancing",
+    "cash-flow",
     "compounding",
+    "scenario-analysis",
+    "monte-carlo-simulation",
+    "backtesting",
+    "xirr",
+    "tax",
+    "streamlit",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -43,8 +53,12 @@ dev = ["pytest>=9.0", "pytest-cov>=7.1", "ruff", "mypy"]
 notebooks = ["ipykernel>=7.1", "ipywidgets>=8.1", "matplotlib>=3.10"]
 
 [project.urls]
-Homepage = "https://github.com/SAMtheROCKET/investment-journey-simulator"
+Homepage = "https://investment-journey.streamlit.app"
 Repository = "https://github.com/SAMtheROCKET/investment-journey-simulator"
+Documentation = "https://github.com/SAMtheROCKET/investment-journey-simulator/tree/main/docs"
+Issues = "https://github.com/SAMtheROCKET/investment-journey-simulator/issues"
+Discussions = "https://github.com/SAMtheROCKET/investment-journey-simulator/discussions"
+Releases = "https://github.com/SAMtheROCKET/investment-journey-simulator/releases"
 
 [tool.setuptools.dynamic]
 version = { attr = "investment_journey_simulator.__version__" }

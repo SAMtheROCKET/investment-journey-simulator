@@ -1,0 +1,82 @@
+# Investment Journey Simulator
+
+> Open-source Python and Streamlit software for modelling how contributions,
+> lump sums, pauses, withdrawals, timing, tax, rebalancing, goals and
+> uncertainty affect long-term investment outcomes.
+
+Investment Journey Simulator is an educational and simulation tool for
+exploring investment journeys rather than forecasting markets or recommending
+investments.
+
+Its core idea is:
+
+**Decisions compound too.**
+
+Users define assumptions. The software calculates their consequences and helps
+explain why different investment journeys produce different results.
+
+## Primary resources
+
+- [Live application](https://investment-journey.streamlit.app)
+- [Source repository](https://github.com/SAMtheROCKET/investment-journey-simulator)
+- [README](https://github.com/SAMtheROCKET/investment-journey-simulator/blob/main/README.md)
+- [Documentation](https://github.com/SAMtheROCKET/investment-journey-simulator/tree/main/docs)
+- [Latest release](https://github.com/SAMtheROCKET/investment-journey-simulator/releases/latest)
+- [Validation and limitations](https://github.com/SAMtheROCKET/investment-journey-simulator/blob/main/docs/VALIDATION_AND_LIMITATIONS.md)
+- [Sources and conventions](https://github.com/SAMtheROCKET/investment-journey-simulator/blob/main/docs/SOURCES.md)
+
+## Core capabilities
+
+- SIP and systematic investment plan modelling
+- Lump-sum investments
+- Contribution step-ups, pauses, resumes and restarts
+- One-off and recurring withdrawals
+- Multi-fund portfolio simulation
+- Portfolio rebalancing
+- Goal planning and goal-seek calculations
+- Historical replay and rolling backtesting
+- Monte Carlo and stochastic simulation
+- Sequence-risk analysis
+- XIRR and post-tax XIRR
+- Inflation-adjusted nominal and real-value projections
+- Tax-aware cash-flow modelling for the supported Indian resident-individual scope
+- Journey comparison
+- Decision attribution
+- PDF, Excel and JSON reporting
+
+## Intended users
+
+The project is designed for beginners who want understandable investment
+projections as well as advanced users, developers and researchers who want
+inspectable assumptions, reproducible scenarios and auditable calculations.
+
+## Important limitations
+
+Future investment returns are assumptions, not forecasts or guarantees.
+
+Historical data is used for replay, timing analysis, sequence-risk
+demonstration, bootstrap simulation and validation. It is not used to claim
+that historical returns predict future returns.
+
+Tax and regulatory treatment can change and may depend on individual
+circumstances. The software is not financial, investment, tax or legal advice.
+
+## Software
+
+- Language: Python
+- Interface: Streamlit
+- License: MIT
+- Package: investment-journey-simulator
+- Current release: v4.4.2
+
+## Project identity
+
+Project: Investment Journey Simulator
+
+Maintainer: Sambit Supriya Dash
+
+GitHub: https://github.com/SAMtheROCKET
+
+Tagline: Decisions compound too.
+
+Principle: You define the assumptions. It shows you their consequences.

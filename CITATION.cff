@@ -1,41 +1,76 @@
 cff-version: 1.2.0
+
 title: Investment Journey Simulator
+
 message: >-
   If you use this software, or a figure it produced, please cite it
   using the metadata below.
+
 type: software
+
 authors:
   - family-names: Dash
     given-names: Sambit Supriya
     alias: SAMtheROCKET
+
 repository-code: >-
   https://github.com/SAMtheROCKET/investment-journey-simulator
+
+url: https://investment-journey.streamlit.app
+
 abstract: >-
-  A long-term investment planning simulator built around one
-  question: not what a monthly contribution becomes, but how much
-  the decisions along the way change that number. Plans are built
-  as timelines of events - start, pause, resume, step up, withdraw,
-  close, reopen - and the difference between any two plans is
-  attributed to its causes by Shapley value, so the parts sum to
-  the whole gap exactly. Lot-level accounting carries Indian
-  capital gains treatment, including the short and long term
-  boundary, the annual exemption, surcharge with marginal relief
-  and grandfathering. The engine is cross-checked against two
-  independently written simulators over tens of thousands of
-  randomly generated plans.
+  An open-source Python and Streamlit investment planning simulator
+  for modelling SIPs (systematic investment plans), lump-sum
+  investments, contribution step-ups and pauses, withdrawals,
+  portfolio rebalancing, goals, historical replay, Monte Carlo
+  scenarios, XIRR and tax-aware cash flows. Investment plans are
+  represented as timelines of contributions and life events so users
+  can examine how timing and financial decisions change long-term
+  portfolio outcomes. Journey comparison can attribute differences
+  between plans using Shapley values, while the risk tools support
+  historical replay, rolling backtests, stochastic simulation and
+  sequence-risk analysis. The simulator also supports inflation-aware
+  projections, goal-seek calculations, multi-fund portfolios and
+  auditable reporting. Indian resident-individual capital-gains
+  treatment is modelled for the supported scope. The numerical engine
+  is cross-checked against independently written reference simulators
+  over tens of thousands of generated investment plans. The software
+  is intended for simulation and education rather than market
+  forecasting or investment advice.
+
 keywords:
   - personal finance
+  - investment planning
   - investment simulation
   - financial planning
+  - SIP
   - systematic investment plan
+  - lump sum investment
   - portfolio
+  - portfolio simulation
+  - portfolio rebalancing
+  - cash flow
+  - compounding
+  - goal planning
+  - goal seek
+  - historical backtesting
+  - historical replay
+  - monte carlo simulation
+  - stochastic simulation
+  - sequence risk
+  - scenario analysis
   - capital gains tax
+  - tax-aware investing
   - shapley value
-  - attribution
-  - xirr
-  - rebalancing
-  - monte carlo
-  - streamlit
+  - decision attribution
+  - XIRR
+  - inflation-adjusted returns
+  - Python
+  - Streamlit
+  - open source
+
 license: MIT
+
 version: 4.4.2
+
 date-released: '2026-09-01'
