@@ -1,0 +1,1014 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>
+    Investment Journey Simulator - SIP, Portfolio, Withdrawal,
+    Rebalancing & Monte Carlo Simulator
+  </title>
+
+  <meta
+    name="description"
+    content="Open-source investment planning simulator for SIPs, lump sums, contribution pauses, withdrawals, tax-aware cash flows, portfolio rebalancing, historical backtesting, Monte Carlo simulation, XIRR and financial goals."
+  >
+
+  <meta
+    name="keywords"
+    content="investment journey simulator, SIP calculator, SIP simulator, systematic investment plan, investment planning simulator, portfolio simulator, withdrawal calculator, portfolio rebalancing, Monte Carlo investment simulation, historical backtesting, XIRR, goal planning, tax aware investing, Python finance, Streamlit"
+  >
+
+  <meta name="author" content="Sambit Supriya Dash">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+
+  <link
+    rel="canonical"
+    href="https://samtherocket.github.io/investment-journey-simulator/"
+  >
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Investment Journey Simulator">
+  <meta property="og:title" content="Investment Journey Simulator - Decisions compound too.">
+  <meta
+    property="og:description"
+    content="Model contributions, pauses, withdrawals, timing, tax, rebalancing, historical paths and uncertainty - then understand why investment journeys end differently."
+  >
+  <meta
+    property="og:url"
+    content="https://samtherocket.github.io/investment-journey-simulator/"
+  >
+  <meta
+    property="og:image"
+    content="https://raw.githubusercontent.com/SAMtheROCKET/investment-journey-simulator/main/assets/journey_comparison.png"
+  >
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta
+    name="twitter:title"
+    content="Investment Journey Simulator - Decisions compound too."
+  >
+  <meta
+    name="twitter:description"
+    content="An open-source simulator for modelling how real investment decisions change long-term outcomes."
+  >
+  <meta
+    name="twitter:image"
+    content="https://raw.githubusercontent.com/SAMtheROCKET/investment-journey-simulator/main/assets/journey_comparison.png"
+  >
+
+  <meta name="theme-color" content="#17201f">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Investment Journey Simulator",
+    "alternateName": "Investment Journey",
+    "description": "Open-source Python and Streamlit investment planning simulator for SIPs, lump-sum investments, contribution pauses, withdrawals, tax-aware cash flows, portfolio rebalancing, historical backtesting, Monte Carlo simulation, XIRR and goal planning.",
+    "url": "https://samtherocket.github.io/investment-journey-simulator/",
+    "applicationCategory": "FinanceApplication",
+    "applicationSubCategory": "Investment Planning and Simulation",
+    "operatingSystem": "Cross-platform",
+    "softwareVersion": "4.4.2",
+    "isAccessibleForFree": true,
+    "license": "https://opensource.org/license/mit",
+    "downloadUrl": "https://github.com/SAMtheROCKET/investment-journey-simulator/releases/tag/v4.4.2",
+    "screenshot": "https://raw.githubusercontent.com/SAMtheROCKET/investment-journey-simulator/main/assets/journey_comparison.png",
+    "featureList": [
+      "SIP and systematic investment plan modelling",
+      "Lump-sum investments",
+      "Contribution step-ups, pauses, resumes and restarts",
+      "One-off and recurring withdrawals",
+      "Multi-fund portfolio simulation",
+      "Portfolio rebalancing",
+      "Goal planning and goal seek",
+      "Historical replay and rolling backtesting",
+      "Monte Carlo and stochastic simulation",
+      "Sequence-risk analysis",
+      "XIRR and post-tax XIRR",
+      "Inflation-adjusted projections",
+      "Tax-aware cash-flow modelling",
+      "Journey comparison and decision attribution",
+      "PDF, Excel and JSON reporting"
+    ],
+    "author": {
+      "@type": "Person",
+      "name": "Sambit Supriya Dash",
+      "url": "https://github.com/SAMtheROCKET"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "sameAs": [
+      "https://github.com/SAMtheROCKET/investment-journey-simulator",
+      "https://investment-journey.streamlit.app"
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --ink: #17201f;
+      --ink-soft: #33413e;
+      --paper: #f3efe6;
+      --paper-deep: #e9e3d8;
+      --brass: #9a793f;
+      --brass-deep: #70582f;
+      --verdigris: #386c65;
+      --line: rgba(23, 32, 31, 0.18);
+      --muted: #66706c;
+      --white: #fffdf8;
+      --max: 1160px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(
+          180deg,
+          var(--paper) 0%,
+          #f7f4ed 52%,
+          var(--paper) 100%
+        );
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .wrap {
+      width: min(calc(100% - 40px), var(--max));
+      margin-inline: auto;
+    }
+
+    .topbar {
+      border-bottom: 1px solid var(--line);
+      background: rgba(243, 239, 230, 0.94);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      font-weight: 760;
+      letter-spacing: -0.025em;
+      text-decoration: none;
+    }
+
+    .topnav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 0.92rem;
+    }
+
+    .topnav a {
+      color: var(--ink-soft);
+      text-decoration: none;
+    }
+
+    .topnav a:hover {
+      color: var(--verdigris);
+    }
+
+    .hero {
+      padding: 96px 0 82px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 17px;
+      color: var(--verdigris);
+      font-size: 0.78rem;
+      font-weight: 760;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      line-height: 0.96;
+      letter-spacing: -0.065em;
+      font-weight: 760;
+    }
+
+    .tagline {
+      margin: 25px 0 0;
+      color: var(--brass-deep);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.7rem, 3vw, 2.5rem);
+      font-style: italic;
+    }
+
+    .hero-copy {
+      max-width: 790px;
+      margin: 29px 0 0;
+      color: var(--ink-soft);
+      font-size: clamp(1.05rem, 1.8vw, 1.28rem);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .button {
+      display: inline-block;
+      min-width: 170px;
+      padding: 12px 18px;
+      border: 1px solid var(--ink);
+      border-radius: 3px;
+      text-decoration: none;
+      text-align: center;
+      font-weight: 720;
+    }
+
+    .button-primary {
+      color: var(--paper);
+      background: var(--ink);
+    }
+
+    .button-primary:hover {
+      background: var(--verdigris);
+      border-color: var(--verdigris);
+    }
+
+    .button-secondary:hover {
+      border-color: var(--verdigris);
+      color: var(--verdigris);
+    }
+
+    .proof {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 64px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .proof-item {
+      padding: 21px 22px;
+      border-right: 1px solid var(--line);
+    }
+
+    .proof-item:last-child {
+      border-right: 0;
+    }
+
+    .proof-value {
+      display: block;
+      font-size: 1.18rem;
+      font-weight: 780;
+    }
+
+    .proof-label {
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    section {
+      padding: 82px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      max-width: 850px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+    }
+
+    .section-lead {
+      max-width: 780px;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 1.08rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 42px;
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .feature {
+      min-height: 200px;
+      padding: 27px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, 0.28);
+    }
+
+    .feature-number {
+      display: block;
+      margin-bottom: 28px;
+      color: var(--brass);
+      font-size: 0.75rem;
+      font-weight: 780;
+      letter-spacing: 0.13em;
+    }
+
+    .feature h3 {
+      margin: 0 0 9px;
+      font-size: 1.08rem;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .argument {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .argument-mark {
+      color: var(--brass);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(5rem, 12vw, 11rem);
+      line-height: 0.8;
+    }
+
+    .argument-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .currency-cluster {
+      position: relative;
+      width: 170px;
+      height: 92px;
+      margin-top: 12px;
+      opacity: 0.82;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      color: var(--muted);
+      font-weight: 700;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .currency-symbol.c1 {
+      top: 2px;
+      left: 8px;
+      font-size: 1rem;
+    }
+
+    .currency-symbol.c2 {
+      top: 10px;
+      left: 58px;
+      font-size: 1.15rem;
+    }
+
+    .currency-symbol.c3 {
+      top: 0px;
+      left: 108px;
+      font-size: 0.95rem;
+    }
+
+    .currency-symbol.c4 {
+      top: 34px;
+      left: 22px;
+      font-size: 1.2rem;
+    }
+
+    .currency-symbol.c5 {
+      top: 30px;
+      left: 86px;
+      font-size: 1.05rem;
+    }
+
+    .currency-symbol.c6 {
+      top: 54px;
+      left: 6px;
+      font-size: 0.98rem;
+    }
+
+    .currency-symbol.c7 {
+      top: 58px;
+      left: 62px;
+      font-size: 1.08rem;
+    }
+
+    .currency-symbol.c8 {
+      top: 50px;
+      left: 118px;
+      font-size: 0.92rem;
+    }
+
+    .currency-strip {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1.8;
+      white-space: nowrap;
+    }
+
+    .statement {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.7rem, 3.5vw, 3rem);
+      line-height: 1.25;
+    }
+
+    .statement strong {
+      color: var(--verdigris);
+    }
+
+    .example {
+      margin-top: 36px;
+      padding: 27px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-soft);
+    }
+
+    .example strong {
+      color: var(--ink);
+    }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      margin-top: 42px;
+      border-top: 1px solid var(--line);
+    }
+
+    .trust-item {
+      padding: 25px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .trust-item:nth-child(odd) {
+      padding-right: 32px;
+      border-right: 1px solid var(--line);
+    }
+
+    .trust-item:nth-child(even) {
+      padding-left: 32px;
+    }
+
+    .trust-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .trust-item span {
+      color: var(--muted);
+    }
+
+    .faq details {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .faq summary {
+      cursor: pointer;
+      font-weight: 760;
+      font-size: 1.05rem;
+    }
+
+    .faq p {
+      max-width: 820px;
+      margin: 13px 0 0;
+      color: var(--ink-soft);
+    }
+
+    .closing {
+      text-align: center;
+    }
+
+    .closing h2 {
+      margin-inline: auto;
+    }
+
+    .closing p {
+      max-width: 720px;
+      margin: 0 auto;
+      color: var(--ink-soft);
+    }
+
+    footer {
+      padding: 35px 0 48px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 850px) {
+      .topnav {
+        display: none;
+      }
+
+      .proof {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .proof-item:nth-child(2) {
+        border-right: 0;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .argument {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .trust-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .trust-item:nth-child(odd),
+      .trust-item:nth-child(even) {
+        padding: 22px 0;
+        border-right: 0;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero {
+        padding-top: 67px;
+      }
+
+      .proof {
+        grid-template-columns: 1fr;
+      }
+
+      .proof-item {
+        border-right: 0;
+      }
+
+      h1 {
+        font-size: 3.4rem;
+      }
+
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./">Investment Journey Simulator</a>
+
+      <nav class="topnav" aria-label="Primary navigation">
+        <a href="#capabilities">Capabilities</a>
+        <a href="#why">Why it matters</a>
+        <a href="#validation">Validation</a>
+        <a
+          href="https://github.com/SAMtheROCKET/investment-journey-simulator"
+        >
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">
+          Open-source investment planning &amp; simulation
+        </p>
+
+        <h1>
+          Investment<br>
+          Journey Simulator
+        </h1>
+
+        <p class="tagline">Decisions compound too.</p>
+
+        <p class="hero-copy">
+          Model SIPs, lump sums, contribution pauses, withdrawals,
+          tax-aware cash flows, portfolio rebalancing, historical
+          paths, Monte Carlo scenarios and financial goals - then
+          understand <strong>why</strong> different investment
+          journeys end differently.
+        </p>
+
+        <div class="actions">
+          <a
+            class="button button-primary"
+            href="https://investment-journey.streamlit.app"
+          >
+            Launch the simulator
+          </a>
+
+          <a
+            class="button button-secondary"
+            href="https://github.com/SAMtheROCKET/investment-journey-simulator"
+          >
+            View source on GitHub
+          </a>
+        </div>
+
+        <div class="proof" aria-label="Project validation summary">
+          <div class="proof-item">
+            <span class="proof-value">2,488</span>
+            <span class="proof-label">tests passing</span>
+          </div>
+
+          <div class="proof-item">
+            <span class="proof-value">93%</span>
+            <span class="proof-label">statement coverage</span>
+          </div>
+
+          <div class="proof-item">
+            <span class="proof-value">≈33,800</span>
+            <span class="proof-label">independent randomized cross-checks</span>
+          </div>
+
+          <div class="proof-item">
+            <span class="proof-value">MIT</span>
+            <span class="proof-label">open-source licence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities">
+      <div class="wrap">
+        <p class="eyebrow">What you can model</p>
+
+        <h2>
+          Not just what the money becomes.
+          What happens along the way.
+        </h2>
+
+        <p class="section-lead">
+          Investment Journey Simulator represents a plan as a sequence
+          of contributions and life events rather than a single monthly
+          payment entered into a compound-interest formula.
+        </p>
+
+        <div class="feature-grid">
+
+          <article class="feature">
+            <span class="feature-number">01 - ENGINE</span>
+            <h3>Built around the actual cash flows</h3>
+            <p>
+              Monthly compounding on the simulator's stated convention,
+              FIFO lot accounting, two expense-ratio models and multi-fund
+              portfolios. The engine tracks when money enters, what it owns
+              and what happens to each lot over time.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">02 - JOURNEY</span>
+            <h3>Plans that can change when life does</h3>
+            <p>
+              SIPs, lump sums, step-ups, contribution pauses, resumes,
+              systematic withdrawals, depletion, full exits, later restarts
+              and portfolio rebalancing. A plan does not have to remain a
+              straight line for thirty years.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">03 - GOALS &amp; RETURNS</span>
+            <h3>Measure the outcome from more than one angle</h3>
+            <p>
+              Nominal and inflation-adjusted values, XIRR, post-tax XIRR,
+              goal seek for contribution, return or horizon, drawdown,
+              contribution-versus-growth views and a validation layer that
+              exposes the assumptions behind the result.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">04 - RISK &amp; HISTORY</span>
+            <h3>Replace the single smooth return line with paths</h3>
+            <p>
+              Historical replay, rolling backtests, return-path analysis,
+              drawdowns, sequence-of-returns risk, stochastic scenarios,
+              Monte Carlo simulation and block-bootstrap paths sourced from
+              real historical observations.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">05 - COMPARE</span>
+            <h3>Explain why two journeys finish differently</h3>
+            <p>
+              Compare plans side by side, isolate timing effects and attribute
+              a multi-decision outcome gap to its causes. Shapley-based
+              attribution handles interacting changes so the explained parts
+              add back to the total difference.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">06 - REBALANCING</span>
+            <h3>Test allocation policy instead of assuming it</h3>
+            <p>
+              Model target allocations, drift, overweight handling,
+              proportion-based rebalancing and alternative rebalancing
+              policies, then compare what those policies actually change in
+              the investment path.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">07 - TAX DEPTH</span>
+            <h3>Regional rules where the model supports them</h3>
+            <p>
+              The global engine does not assume a country. For the supported
+              Indian resident-individual scope, the simulator adds lot-level
+              capital-gains treatment, short- and long-term holding periods,
+              the annual exemption, grandfathering, loss set-off and expiry,
+              surcharge slabs, marginal relief, exit load and STT.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">08 - TIMELINE</span>
+            <h3>Plan by seeing when things happen</h3>
+            <p>
+              A clickable event rail, live Gantt-style journey view,
+              date-aware events, visible units, choose-or-type controls and
+              one shared scenario that carries across the simulator instead
+              of making the user re-enter the same plan on every screen.
+            </p>
+          </article>
+
+          <article class="feature">
+            <span class="feature-number">09 - OUTPUT &amp; AUDIT</span>
+            <h3>Keep the result portable and inspectable</h3>
+            <p>
+              Accessible chart colours, scenario persistence, PDF, Excel and
+              JSON exports, reports, source documentation and explicit
+              validation and limitation records. The working is meant to be
+              questioned, reproduced and checked.
+            </p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="why">
+      <div class="wrap argument">
+        <div class="argument-visual" aria-hidden="true">
+          <div class="argument-mark">Δ</div>
+
+          <div class="currency-cluster">
+            <span class="currency-symbol c1">₹</span>
+            <span class="currency-symbol c2">$</span>
+            <span class="currency-symbol c3">¥</span>
+            <span class="currency-symbol c4">€</span>
+            <span class="currency-symbol c5">£</span>
+            <span class="currency-symbol c6">₩</span>
+            <span class="currency-symbol c7">₽</span>
+            <span class="currency-symbol c8">₣</span>
+          </div>
+        </div>
+
+
+        <div>
+          <p class="eyebrow">Why timing matters</p>
+
+          <p class="statement">
+            Two plans can invest the <strong>same total amount</strong>,
+            take the <strong>same five-year break</strong>, and still
+            finish far apart because the break happened at a different
+            point in the journey.
+          </p>
+
+          <div class="example">
+            <strong>One worked example, shown in INR:</strong>
+            two twenty-year plans each contribute exactly
+            <strong>₹45,00,000</strong> and each pause contributions for
+            five years. Moving that pause earlier changes the ending
+            portfolio by about <strong>₹22.83 lakh</strong> under the same
+            assumptions. Change the display currency and the principle is
+            unchanged: the difference comes from time available for
+            compounding, not additional money invested.
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="validation">
+      <div class="wrap">
+        <p class="eyebrow">Trust the working, not the interface</p>
+
+        <h2>
+          A simulator should be inspectable.
+        </h2>
+
+        <p class="section-lead">
+          The project documents both what has been tested and what
+          remains a limitation. Numerical output is cross-checked
+          independently rather than relying only on the implementation's
+          own unit tests.
+        </p>
+
+        <div class="trust-grid">
+          <div class="trust-item">
+            <strong>2,488 tests pass</strong>
+            <span>
+              With three intentionally skipped tests and 93% statement
+              coverage in the published validation record.
+            </span>
+          </div>
+
+          <div class="trust-item">
+            <strong>Independent simulators</strong>
+            <span>
+              Approximately 29,000 untaxed and 4,800 taxed randomized
+              plans were independently cross-checked.
+            </span>
+          </div>
+
+          <div class="trust-item">
+            <strong>Sources are documented</strong>
+            <span>
+              Statutory parameters, conventions and their sources are
+              recorded rather than hidden inside the interface.
+            </span>
+          </div>
+
+          <div class="trust-item">
+            <strong>Limitations are explicit</strong>
+            <span>
+              Historical data does not become a forecast, and future
+              returns remain user-defined assumptions.
+            </span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a
+            class="button button-secondary"
+            href="https://github.com/SAMtheROCKET/investment-journey-simulator/blob/main/docs/VALIDATION_AND_LIMITATIONS.md"
+          >
+            Read validation
+          </a>
+
+          <a
+            class="button button-secondary"
+            href="https://github.com/SAMtheROCKET/investment-journey-simulator/blob/main/docs/SOURCES.md"
+          >
+            View sources
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq" id="faq">
+      <div class="wrap">
+        <p class="eyebrow">Questions</p>
+        <h2>What this tool is - and is not.</h2>
+
+        <details>
+          <summary>Is Investment Journey Simulator a market forecast?</summary>
+          <p>
+            No. You provide assumptions such as expected return,
+            inflation and contributions. The simulator calculates what
+            those assumptions imply. It does not claim to predict future
+            market returns.
+          </p>
+        </details>
+
+        <details>
+          <summary>
+            Is this only a SIP calculator?
+          </summary>
+          <p>
+            No. SIP and systematic investment plan modelling is one
+            capability. The simulator also handles lump sums, pauses,
+            withdrawals, contribution changes, portfolio rebalancing,
+            goals, historical replay, Monte Carlo scenarios, XIRR and
+            other journey-level decisions.
+          </p>
+        </details>
+
+        <details>
+          <summary>
+            Is the simulator only for Indian investors?
+          </summary>
+          <p>
+            No. The core investment, contribution, portfolio and
+            simulation engine is designed around general investment
+            journeys. India-specific depth is provided where relevant,
+            including supported resident-individual capital-gains
+            modelling and educational investment guides.
+          </p>
+        </details>
+
+        <details>
+          <summary>
+            Is this financial or tax advice?
+          </summary>
+          <p>
+            No. Investment Journey Simulator is an educational and
+            simulation tool. Returns are assumptions, tax rules can
+            change, and individual circumstances may require
+            professional advice.
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="wrap">
+        <p class="eyebrow">Investment Journey Simulator</p>
+
+        <h2>You define the assumptions.<br>It shows you their consequences.</h2>
+
+        <p>
+          Open source, inspectable and designed to make long-term
+          investment decisions easier to reason about without pretending
+          uncertainty does not exist.
+        </p>
+
+        <div class="actions" style="justify-content:center;">
+          <a
+            class="button button-primary"
+            href="https://investment-journey.streamlit.app"
+          >
+            Try it online
+          </a>
+
+          <a
+            class="button button-secondary"
+            href="https://github.com/SAMtheROCKET/investment-journey-simulator/releases/latest"
+          >
+            Latest release
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>
+        © 2026 Sambit Supriya Dash · MIT licensed
+      </span>
+
+      <span>
+        Investment Journey Simulator · v4.4.2
+      </span>
+    </div>
+  </footer>
+</body>
+</html>
