@@ -31,7 +31,10 @@
     "Streamlit"
   ],
   "codeRepository": "https://github.com/SAMtheROCKET/investment-journey-simulator",
-  "url": "https://investment-journey.streamlit.app",
+  "url": "https://samtherocket.github.io/investment-journey-simulator/",
+  "sameAs": [
+    "https://investment-journey.streamlit.app"
+  ],
   "downloadUrl": "https://github.com/SAMtheROCKET/investment-journey-simulator/releases/tag/v4.4.2",
   "issueTracker": "https://github.com/SAMtheROCKET/investment-journey-simulator/issues",
   "continuousIntegration": "https://github.com/SAMtheROCKET/investment-journey-simulator/actions/workflows/quality.yml",

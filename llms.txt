@@ -17,6 +17,7 @@ explain why different investment journeys produce different results.
 
 ## Primary resources
 
+- [Project homepage](https://samtherocket.github.io/investment-journey-simulator/)
 - [Live application](https://investment-journey.streamlit.app)
 - [Source repository](https://github.com/SAMtheROCKET/investment-journey-simulator)
 - [README](https://github.com/SAMtheROCKET/investment-journey-simulator/blob/main/README.md)

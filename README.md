@@ -21,8 +21,9 @@ costs.**
 
 ![Plan a journey by clicking on a timeline](assets/hero.gif)
 
-**[Try it online](https://investment-journey.streamlit.app)** · **[Run it locally](#running-it)** ·
-**[Documentation](docs/)**
+**[Project website](https://samtherocket.github.io/investment-journey-simulator/)** ·
+**[Try it online](https://investment-journey.streamlit.app)** ·
+**[Run it locally](#running-it)** · **[Documentation](docs/)**
 
 ## What you can model
 

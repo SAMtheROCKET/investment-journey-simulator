@@ -53,7 +53,8 @@ dev = ["pytest>=9.0", "pytest-cov>=7.1", "ruff", "mypy"]
 notebooks = ["ipykernel>=7.1", "ipywidgets>=8.1", "matplotlib>=3.10"]
 
 [project.urls]
-Homepage = "https://investment-journey.streamlit.app"
+Homepage = "https://samtherocket.github.io/investment-journey-simulator/"
+"Live App" = "https://investment-journey.streamlit.app"
 Repository = "https://github.com/SAMtheROCKET/investment-journey-simulator"
 Documentation = "https://github.com/SAMtheROCKET/investment-journey-simulator/tree/main/docs"
 Issues = "https://github.com/SAMtheROCKET/investment-journey-simulator/issues"
