@@ -2,7 +2,7 @@
   "@context": "https://w3id.org/codemeta/3.1",
   "@type": "SoftwareSourceCode",
   "name": "Investment Journey Simulator",
-  "version": "4.4.2",
+  "version": "4.4.3",
   "description": "Open-source Python and Streamlit investment planning simulator for SIPs, lump-sum investments, contribution pauses, withdrawals, tax-aware cash flows, portfolio rebalancing, historical backtesting, Monte Carlo simulation, goal planning and long-term portfolio outcomes.",
   "applicationCategory": "Personal Finance",
   "keywords": [
@@ -35,7 +35,7 @@
   "sameAs": [
     "https://investment-journey.streamlit.app"
   ],
-  "downloadUrl": "https://github.com/SAMtheROCKET/investment-journey-simulator/releases/tag/v4.4.2",
+  "downloadUrl": "https://github.com/SAMtheROCKET/investment-journey-simulator/releases/latest",
   "issueTracker": "https://github.com/SAMtheROCKET/investment-journey-simulator/issues",
   "continuousIntegration": "https://github.com/SAMtheROCKET/investment-journey-simulator/actions/workflows/quality.yml",
   "license": "https://spdx.org/licenses/MIT.html",
@@ -43,7 +43,7 @@
   "runtimePlatform": "Python >=3.11",
   "operatingSystem": "Cross-platform",
   "developmentStatus": "active",
-  "datePublished": "2026-09-01",
+  "datePublished": "2026-09-03",
   "author": {
     "@id": "https://github.com/SAMtheROCKET",
     "@type": "Person",

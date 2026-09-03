@@ -68,7 +68,7 @@ circumstances. The software is not financial, investment, tax or legal advice.
 - Interface: Streamlit
 - License: MIT
 - Package: investment-journey-simulator
-- Current release: v4.4.2
+- Current release: v4.4.3
 
 ## Project identity
 
