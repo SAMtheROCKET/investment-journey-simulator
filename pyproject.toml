@@ -9,7 +9,7 @@ name = "investment-journey-simulator"
 # in that module for how this differs from the scenario schema.
 dynamic = ["version"]
 description = "Open-source investment planning simulator for SIPs, lump sums, contribution pauses, withdrawals, tax-aware cash flows, portfolio rebalancing, historical backtesting, Monte Carlo simulation and goals."
-readme = "README.md"
+readme = "PYPI_README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Sambit Supriya Dash", email = "86950017+SAMtheROCKET@users.noreply.github.com" }]
